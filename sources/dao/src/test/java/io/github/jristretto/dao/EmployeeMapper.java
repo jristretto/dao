@@ -4,6 +4,7 @@
  */
 package io.github.jristretto.dao;
 
+import io.github.jristretto.mappers.AbstractMapper;
 import java.util.function.Function;
 
 /**

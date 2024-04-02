@@ -1,5 +1,6 @@
 package io.github.jristretto.dao;
 
+import io.github.jristretto.mappers.Mapper;
 import io.github.jristretto.annotations.Generated;
 import io.github.jristretto.annotations.ID;
 import io.github.jristretto.annotations.TableName;

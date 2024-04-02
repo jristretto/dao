@@ -1,9 +1,6 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package io.github.jristretto.dao;
+package io.github.jristretto.mappers;
 
+import io.github.jristretto.mappers.AbstractMapper;
 import java.util.function.Function;
 
 /**

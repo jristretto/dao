@@ -1,11 +1,11 @@
 package io.github.jristretto.dao;
 
-import java.io.Serializable;
+import io.github.jristretto.mappers.Mapper;
+import io.github.jristretto.mappers.AbstractMapper;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;

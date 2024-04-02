@@ -1,16 +1,12 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/UnitTests/JUnit5TestClass.java to edit this template
- */
-package io.github.jristretto.dao;
+package io.github.jristretto.mappers;
 
+import io.github.jristretto.dao.ComponentPair;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 import static java.util.stream.Collectors.toList;
 import org.junit.jupiter.api.Test;
 //import static org.junit.jupiter.api.Assertions.*;
-import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 /**

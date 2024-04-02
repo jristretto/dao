@@ -1,8 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Record.java to edit this template
- */
-package io.github.jristretto.dao;
+package io.github.jristretto.mappers;
 
 import io.github.jristretto.annotations.Generated;
 import io.github.jristretto.annotations.ID;
