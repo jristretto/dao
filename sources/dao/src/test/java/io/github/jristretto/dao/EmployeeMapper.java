@@ -4,9 +4,6 @@
  */
 package io.github.jristretto.dao;
 
-import io.github.jristretto.annotations.Generated;
-import io.github.jristretto.annotations.ID;
-import java.time.LocalDate;
 import java.util.function.Function;
 
 /**
@@ -15,8 +12,12 @@ import java.util.function.Function;
  */
 class EmployeeMapper extends AbstractMapper<Employee, Integer> {
 
-    public EmployeeMapper() {
+    private EmployeeMapper() {
         super( Employee.class );
+    }
+
+    static {
+        AbstractMapper.register( new EmployeeMapper() );
     }
 
     @Override
@@ -39,6 +40,5 @@ class EmployeeMapper extends AbstractMapper<Employee, Integer> {
 
         return result;
     }
-
 
 }

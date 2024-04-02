@@ -3,12 +3,12 @@ package io.github.jristretto.dao;
 import java.io.Serializable;
 
 /**
- * Super of all DAO factories. Registers mappers that help to understand
- * the entities that are to be mapped by this DAO.
+ * Super of all DAO factories. Registers mappers that help to understand the
+ * entities that are to be mapped by this DAO.
  *
  * @author Pieter van den Hombergh {@code pieter.van.den.hombergh@gmail.com}
  */
-public abstract class DAOFactory {
+public interface DAOFactory {
 
     /**
      * Create a DAO for a given entity class indexed by a key class.
@@ -18,8 +18,8 @@ public abstract class DAOFactory {
      * @param forClass actual type of the entity
      * @return the prepared DAO.
      */
-    public abstract <E extends Record & Serializable, K extends Serializable> DAO<E, K>
-            createDao( Class<E> forClass );
+    <E extends Record & Serializable, K extends Serializable> DAO<E, K>
+            createDao(Class<E> forClass);
 
     /**
      *
@@ -32,7 +32,7 @@ public abstract class DAOFactory {
      * @param token transaction token.
      * @return the prepared DAO
      */
-    public abstract <E extends Record & Serializable, K extends Serializable> DAO<E, K>
-            createDao( Class<E> forClass,
-            TransactionToken token );
+    <E extends Record & Serializable, K extends Serializable> DAO<E, K>
+            createDao(Class<E> forClass,
+                    TransactionToken token);
 }

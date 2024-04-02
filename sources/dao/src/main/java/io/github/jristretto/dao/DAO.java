@@ -5,9 +5,11 @@ import io.github.jristretto.annotations.ID;
 import io.github.jristretto.annotations.TableName;
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.lang.reflect.RecordComponent;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Level;
@@ -118,7 +120,7 @@ public interface DAO<R extends Record & Serializable, K extends Serializable>
      *
      * @return the token
      *
-     * @throws java.lang.Exception on error, eg database connection failure
+     * @throws java.lang.Exception on error, e.g. database connection failure
      */
     default TransactionToken startTransaction() throws Exception {
         return null;
@@ -275,7 +277,7 @@ public interface DAO<R extends Record & Serializable, K extends Serializable>
     }
 
     /**
-     * Return the list of field names of enitity that are considered for
+     * Return the list of field names of entitity that are considered for
      * persistence. This implementation does not consider field modifiers such
      * as transient.
      *
@@ -287,39 +289,6 @@ public interface DAO<R extends Record & Serializable, K extends Serializable>
                 .stream()
                 .map( Field::getName )
                 .collect( toList() );
-    }
-
-    /**
-     * Get the names of the generated fields.
-     *
-     * @return the list of names.
-     */
-    default public List<String> generatedFields() {
-        //TODO cache in factory map.
-        Field[] declaredFields = getMapper()
-                .entityType()
-                .getDeclaredFields();
-
-        return Arrays.stream( declaredFields )
-                .filter( f -> isGenerated( f ) )
-                .map( Field::getName )
-                .collect( toList() );
-    }
-
-    /**
-     * Check if field has annotation Generated or annotation ID with generated
-     * is false.
-     *
-     * @param f field.
-     *
-     * @return boolean if field is supposed to be generated when stored in the
-     * backing store.
-     */
-    static boolean isGenerated(Field f) {
-        ID idAnnotation = f.getAnnotation( ID.class );
-        Generated genAnnotation = f.getAnnotation( Generated.class );
-        return null != genAnnotation || ( null != idAnnotation && idAnnotation
-                                         .generated() );
     }
 
     /**
@@ -361,12 +330,8 @@ public interface DAO<R extends Record & Serializable, K extends Serializable>
      * either by being tagged with ID or Generated.
      */
     default List<ComponentPair> dropGeneratedFields(R entity) {
-        Mapper<R, K> mapper = getMapper();
-        Predicate<ComponentPair> fpl = rcp -> !mapper
-                .isGenerated( rcp.component() );
-        return mapper.stream( entity )
-                .filter( fpl )
-                .collect( toList() );
+        return getMapper()
+                .dropGeneratedFields( entity );
     }
 
     /**

@@ -4,23 +4,25 @@
  */
 package io.github.jristretto.dao;
 
-import io.github.jristretto.annotations.Generated;
-import io.github.jristretto.annotations.ID;
-import java.time.LocalDate;
 import java.util.function.Function;
 
 /**
+ * Does no work other than required.
  *
  * @author Pieter van den Hombergh {@code <pieter.van.den.hombergh@gmail.com>}
  */
-class LazyEmployeeMapper extends AbstractMapper<Employee, Integer> {
+class LazyEmployeeMapper extends AbstractMapper<LazyEmployee, Integer> {
 
-    public LazyEmployeeMapper() {
-        super( Employee.class );
+    static {
+        AbstractMapper.register( new LazyEmployeeMapper() );
+    }
+
+    private LazyEmployeeMapper() {
+        super( LazyEmployee.class );
     }
 
     @Override
-    public Function<Employee, Integer> keyExtractor() {
-        return Employee::employeeid;
+    public Function<LazyEmployee, Integer> keyExtractor() {
+        return LazyEmployee::employeeid;
     }
 }

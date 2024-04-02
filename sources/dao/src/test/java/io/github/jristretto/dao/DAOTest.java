@@ -23,7 +23,8 @@ public class DAOTest {
 
     static class DummyDAO implements DAO<Employee, Integer> {
 
-        final Mapper<Employee, Integer> mapper = new EmployeeMapper();
+        final Mapper<Employee, Integer> mapper = AbstractMapper.mapperFor(
+                Employee.class );
 
         public DummyDAO() {
 
@@ -130,8 +131,7 @@ public class DAOTest {
 
         assertSoftly( softly -> {
             softly.assertThat( remainingComponents )
-                    .as(
-                            "id should have been dropped" )
+                    .as( "id should have been dropped" )
                     .hasSize( 6 );
             softly.assertThat( remainingComponents )
                     .containsExactly( "lastname",
