@@ -45,8 +45,8 @@ public class InMemoryDAOTest implements TestData {
     @Test
     public void testGet() {
         Integer id = piet.employeeid();
-        Optional expResult = Optional.of( piet );
-        Optional result = dao.get( id );
+        var expResult = Optional.of( piet );
+        var result = dao.get( id );
         assertThat( result )
                 .isEqualTo( expResult );
     }

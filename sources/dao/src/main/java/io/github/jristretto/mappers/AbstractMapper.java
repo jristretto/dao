@@ -37,12 +37,14 @@ public abstract class AbstractMapper<R extends Record & Serializable, K extends 
      * @param et the entity java Type (class)
      * @return a mapper
      */
+    @SuppressWarnings( "unchecked" )
     public static <X extends Record & Serializable, Y extends Serializable> Mapper<X, Y> mapperFor(
             Class<X> et) {
         if ( !register.containsKey( et ) ) {
             loadMapperClass( et );
         }
-        return (Mapper< X, Y>) register.get( et );
+
+        return Mapper.class.cast( register.get( et ) );
     }
 
     /**

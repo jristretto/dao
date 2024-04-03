@@ -5,6 +5,7 @@
 package io.github.jristretto.mappers;
 
 import static io.github.jristretto.mappers.LazyEmployee.Gender.N;
+import java.lang.reflect.RecordComponent;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Map;
@@ -49,13 +50,14 @@ public class MapperTest {
 
     //@Disabled("think TDD")
     @Test @DisplayName( "some story line" )
+    @SuppressWarnings( "unchecked" )
     public void testStream() {
         var m = AbstractMapper.mapperFor( LazyEmployee.class );
-        Entry[] toArray = m.stream( jean )
+        Entry<String, Object>[] toArray = m.stream( jean )
                 .map( cp -> Map.entry( cp.component()
                 .getName(), cp.value() ) )
                 .toArray( Entry[]::new );
-        var mapped = Map.ofEntries( toArray );
+        Map<String, Object> mapped = Map.ofEntries( toArray );
         Map<String, Object> expected = Map.of(
                 "employeeid", 0,
                 "lastname", "Klaassen",

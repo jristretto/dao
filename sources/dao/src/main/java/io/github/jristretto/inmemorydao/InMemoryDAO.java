@@ -161,7 +161,8 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
         try ( ObjectInputStream in = new ObjectInputStream(
                 new FileInputStream( aStorageName ) ) ) {
             while ( true ) {
-                R r = (R) in.readObject();
+                R r = mapper.entityType()
+                        .cast( in.readObject() );
                 System.out.println( "r = " + r );
                 this.storage.put( mapper.keyExtractor()
                         .apply( r ), r );

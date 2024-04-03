@@ -117,7 +117,7 @@ public interface Mapper<R extends Record & Serializable, K extends Serializable>
      * A field is generated when it has the annotation Generated or ID with
      * generated==true (the default).
      *
-     * @param f to test
+     * @param rc to test
      * @return result of test
      */
     default boolean isGenerated(RecordComponent rc) {
