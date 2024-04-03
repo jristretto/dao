@@ -1,20 +1,12 @@
 package io.github.jristretto.dao;
 
 import io.github.jristretto.mappers.Mapper;
-import io.github.jristretto.annotations.Generated;
-import io.github.jristretto.annotations.ID;
 import io.github.jristretto.annotations.TableName;
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.lang.reflect.RecordComponent;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import static java.util.stream.Collectors.toList;
 import java.util.stream.StreamSupport;
 //import nl.fontys.sebivenlo.sebiannotations.Generated;
@@ -88,9 +80,11 @@ public interface DAO<R extends Record & Serializable, K extends Serializable>
     Optional<R> save(R e);
 
     /**
-     * Update and entity. In a typical database scenario, all fields are set to
-     * the new values. It is up to the user to ensure that the id value is
-     * stable throughout this operation.
+     * Update and entity.
+     *
+     * In a typical database scenario, all fields are set to the new values. It
+     * is up to the implementer to ensure that the id value is * stable
+     * throughout this operation.
      *
      * @param e entity to update
      *
@@ -107,13 +101,33 @@ public interface DAO<R extends Record & Serializable, K extends Serializable>
     void deleteEntity(R e);
 
     /**
-     * Delete an entity by key.
+     * Delete an entity by key. When k == null do nothing.
      *
      * @param k the key (id) of the entity to delete
      */
     void deleteById(K k);
 
-    List<R> deleteWhere(Object... keyValues);
+    /**
+     * Delete the entities where component equals value.
+     *
+     * @param keyValues Map of String, Object
+     * @return the deleted records.
+     */
+    default List<R> deleteWhere(Object... keyValues) {
+        List<R> selected = selectWhere( keyValues );
+        for ( R r : selected ) {
+            deleteEntity( r );
+        }
+        return selected;
+    }
+
+    /**
+     * Select the entities where component equals value.
+     *
+     * @param keyValues Map of String, Object
+     * @return the selected records.
+     */
+    List<R> selectWhere(Object... keyValues);
 
     /**
      * Start a transaction and create a token carrying the transaction relevant

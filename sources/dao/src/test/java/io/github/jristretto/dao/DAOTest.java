@@ -32,37 +32,37 @@ public class DAOTest {
 
         @Override
         public Optional<Employee> get(Integer id) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException( "Not supported yet." );
         }
 
         @Override
         public List<Employee> getAll() {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException( "Not supported yet." );
         }
 
         @Override
         public Optional<Employee> save(Employee e) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException( "Not supported yet." );
         }
 
         @Override
         public Employee update(Employee e) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException( "Not supported yet." );
         }
 
         @Override
         public void deleteEntity(Employee e) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException( "Not supported yet." );
         }
 
         @Override
         public void deleteById(Integer k) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException( "Not supported yet." );
         }
 
         @Override
-        public List<Employee> deleteWhere(Object... keyValues) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        public List<Employee> selectWhere(Object... keyValues) {
+            throw new UnsupportedOperationException( "Not supported yet." );
         }
 
         @Override

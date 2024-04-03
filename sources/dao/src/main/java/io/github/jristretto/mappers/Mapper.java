@@ -8,8 +8,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.RecordComponent;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import static java.util.stream.Collectors.toCollection;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -132,5 +137,49 @@ public interface Mapper<R extends Record & Serializable, K extends Serializable>
         return stream( entity )
                 .filter( rcp -> !isGenerated( rcp.component() ) )
                 .toList();
+    }
+
+    /**
+     * Present a record as a String,Object map.
+     *
+     * @param entity to map
+     * @return the map
+     */
+    default Map<String, Object> asMap(R entity) {
+        var toMap = Collectors.toMap( c -> c.component()
+                .getName(), ComponentPair::value );
+        return stream( entity )
+                .collect( toMap );
+    }
+
+    /**
+     * Get the positions of the components in the record as a map.
+     *
+     * @return the map.
+     */
+    default Map<String, Integer> componentIndex() {
+        RecordComponent[] recordComponents = entityType()
+                .getRecordComponents();
+        Map.Entry[] entries = new Map.Entry[ recordComponents.length ];
+        for ( int i = 0; i < recordComponents.length; i++ ) {
+            Map.Entry<String, Integer> entry = Map.entry( recordComponents[ i ]
+                    .getName(), i );
+            entries[ i ] = entry;
+        }
+        return Map.ofEntries( entries );
+    }
+
+    /**
+     * Get the set of names.
+     *
+     * The returned set is ordered in the order of the record definition.
+     *
+     * @return a set
+     */
+    default Set<String> componentNames() {
+        return Set.copyOf( Stream.of( entityType()
+                .getRecordComponents() )
+                .map( RecordComponent::getName )
+                .collect( toCollection( LinkedHashSet::new ) ) );
     }
 }
