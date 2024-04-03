@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package io.github.jristretto.inmemorydao;
 
 import io.github.jristretto.dao.DAO;
@@ -25,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,6 +57,18 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
             Runtime.getRuntime()
                     .addShutdownHook( saveThread );
         }
+    }
+
+    private static final AtomicInteger serialNumbers = new AtomicInteger();
+
+    @Override
+    public int lastId() {
+        return serialNumbers.get();
+    }
+
+    @Override
+    public int nextId() {
+        return serialNumbers.incrementAndGet();
     }
 
     @Override
@@ -135,31 +144,38 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
         try (
                 ObjectOutputStream out = new ObjectOutputStream(
                         new FileOutputStream( storageFileName ) ); ) {
-            out.writeObject( this.storage );
+            for ( R value : storage.values() ) {
+                out.writeObject( value );
+            }
         } catch ( FileNotFoundException ex ) {
-            Logger.getLogger(InMemoryDAO.class.getName() )
+            Logger.getLogger( InMemoryDAO.class.getName() )
                     .log( Level.SEVERE, null, ex );
         } catch ( IOException ex ) {
-            Logger.getLogger(InMemoryDAO.class.getName() )
+            Logger.getLogger( InMemoryDAO.class.getName() )
                     .log( Level.SEVERE, null, ex );
         }
     }
 
     private void load(String aStorageName) {
+        dropAll();
         try ( ObjectInputStream in = new ObjectInputStream(
                 new FileInputStream( aStorageName ) ) ) {
-            this.storage.clear();
-            Map<K, R> readMap = (Map<K, R>) in.readObject();
-
-            this.storage.putAll( readMap );
+            while ( true ) {
+                R r = (R) in.readObject();
+                System.out.println( "r = " + r );
+                this.storage.put( mapper.keyExtractor()
+                        .apply( r ), r );
+            }
+//            this.storage.putAll( readMap );
 
         } catch ( FileNotFoundException ex ) {
-            Logger.getLogger(InMemoryDAO.class.getName() )
+            Logger.getLogger( InMemoryDAO.class.getName() )
                     .log( Level.SEVERE, null, ex );
         } catch ( IOException | ClassNotFoundException ex ) {
-            Logger.getLogger(InMemoryDAO.class.getName() )
+            Logger.getLogger( InMemoryDAO.class.getName() )
                     .log( Level.SEVERE, null, ex );
         }
+        System.out.println( "read from file " + storage.size() );
     }
 
     /**
@@ -242,6 +258,12 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
     @Override
     public Mapper<R, K> getMapper() {
         return AbstractMapper.mapperFor( entityType );
+    }
+
+    @Override
+    public void dropAll() {
+        storage.clear();
+        serialNumbers.set( 0 );
     }
 
 }

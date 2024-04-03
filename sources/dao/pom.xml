@@ -15,8 +15,11 @@
     <name>jristretto :: dao</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <surefire.opens>
+        
+        </surefire.opens>
     </properties>
-<!--    <dependencies>
+    <!--    <dependencies>
         <dependency>
             <groupId>genericmapper</groupId>
             <artifactId>genericmapper</artifactId>

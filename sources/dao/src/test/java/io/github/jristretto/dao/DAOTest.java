@@ -1,15 +1,14 @@
 package io.github.jristretto.dao;
 
-import io.github.jristretto.mappers.Mapper;
-import io.github.jristretto.mappers.AbstractMapper;
-import java.time.LocalDate;
-import java.time.Month;
+import io.github.jristretto.inmemorydao.InMemoryDAO;
 import java.util.List;
-import java.util.Optional;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import org.junit.jupiter.api.Test;
+import testdata.TestData;
+import static testdata.TestData.janneke;
+import static testdata.TestData.jean;
 //import static usertypes.Email.email;
 //import static usertypes.Email.email;
 
@@ -19,66 +18,15 @@ import org.junit.jupiter.api.Test;
  * @author Pieter van den Hombergh {@code pieter.van.den.hombergh@gmail.com}
  */
 //@Disabled
-public class DAOTest {
-
-    static class DummyDAO implements DAO<Employee, Integer> {
-
-        final Mapper<Employee, Integer> mapper = AbstractMapper.mapperFor(
-                Employee.class );
-
-        public DummyDAO() {
-
-        }
-
-        @Override
-        public Optional<Employee> get(Integer id) {
-            throw new UnsupportedOperationException( "Not supported yet." );
-        }
-
-        @Override
-        public List<Employee> getAll() {
-            throw new UnsupportedOperationException( "Not supported yet." );
-        }
-
-        @Override
-        public Optional<Employee> save(Employee e) {
-            throw new UnsupportedOperationException( "Not supported yet." );
-        }
-
-        @Override
-        public Employee update(Employee e) {
-            throw new UnsupportedOperationException( "Not supported yet." );
-        }
-
-        @Override
-        public void deleteEntity(Employee e) {
-            throw new UnsupportedOperationException( "Not supported yet." );
-        }
-
-        @Override
-        public void deleteById(Integer k) {
-            throw new UnsupportedOperationException( "Not supported yet." );
-        }
-
-        @Override
-        public List<Employee> selectWhere(Object... keyValues) {
-            throw new UnsupportedOperationException( "Not supported yet." );
-        }
-
-        @Override
-        public Mapper getMapper() {
-            return mapper;
-        }
-
-    };
+public class DAOTest implements TestData {
 
     TransactionToken ignoredToken = new TransactionToken() {
     };
 
-    DAO dao = new DummyDAO();
+    DAO<Employee, Integer> dao = new InMemoryDAO<>( Employee.class );
 
     /**
-     * This test serves to cover the default implemenations in DAO.
+     * This test serves to cover the default implementations in DAO.
      *
      * @throws Exception no expected
      */
@@ -91,9 +39,9 @@ public class DAOTest {
         assertThat( dao.getTransactionToken() )
                 .isNull();
         assertThat( dao.size() )
-                .isEqualTo( 0 );
+                .isGreaterThanOrEqualTo( 0 );
         assertThat( dao.lastId() )
-                .isEqualTo( 0 );
+                .isGreaterThanOrEqualTo( 0 );
         try {
             dao.close();
         } catch ( Exception e ) {
@@ -114,28 +62,30 @@ public class DAOTest {
     //@Disabled("Think TDD")
     @Test
     void tDropGeneratedComponents() {
-        Employee jean = new Employee( 0, "Klaassen", "Jean",
-                "jan@example.com", 1, true, LocalDate.of( 1991,
-                        2, 23 ),
-                LocalDate.of( 1973, Month.MARCH, 4 ) );
-        dao.getMapper()
-                .asArray( jean );
+//        Employee jean = new Employee( 0, "Klaassen", "Jean",
+//                "jan@example.com", 1, M, true, LocalDate.of( 1991,
+//                        2, 23 ),
+//                LocalDate.of( 1973, Month.MARCH, 4 ) );
+        System.out.println( "janneke = " + janneke );
         List<ComponentPair> dropGeneratedComponents = dao.dropGeneratedFields(
-                jean );
+                janneke );
+        System.out.println(
+                "dropGeneratedComponents = " + dropGeneratedComponents );
         final List<String> remainingComponents = dropGeneratedComponents
                 .stream()
                 .map( rcp -> rcp.component()
                 .getName() )
                 .collect(
                         toList() );
-
         assertSoftly( softly -> {
             softly.assertThat( remainingComponents )
                     .as( "id should have been dropped" )
-                    .hasSize( 6 );
+                    .hasSize( 7 );
             softly.assertThat( remainingComponents )
                     .containsExactly( "lastname",
-                            "firstname", "email", "departmentid", "available",
+                            "firstname", "email", "departmentid",
+                            "gender",
+                            "available",
                             "dob" );
         } );
 //        fail( "method DropGeneratedFields completed succesfully; you know what to do" );

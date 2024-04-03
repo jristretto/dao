@@ -38,8 +38,7 @@ import java.util.stream.StreamSupport;
  * @param <K> Key to the entity.
  */
 public interface DAO<R extends Record & Serializable, K extends Serializable>
-        extends
-        AutoCloseable {
+        extends AutoCloseable {
 
     /**
      * Get the entity by id, if any.
@@ -90,7 +89,13 @@ public interface DAO<R extends Record & Serializable, K extends Serializable>
      *
      * @return the updated entity
      */
-    R update(R e);
+    default R update(R e) {
+        deleteById( getMapper()
+                .keyExtractor()
+                .apply( e ) );
+        return save( e )
+                .get();
+    }
 
     /**
      * Delete t using its key (id). This method extracts the key and uses that
@@ -98,7 +103,11 @@ public interface DAO<R extends Record & Serializable, K extends Serializable>
      *
      * @param e entity to delete
      */
-    void deleteEntity(R e);
+    default void deleteEntity(R e) {
+        deleteById( getMapper()
+                .keyExtractor()
+                .apply( e ) );
+    }
 
     /**
      * Delete an entity by key. When k == null do nothing.
@@ -180,6 +189,12 @@ public interface DAO<R extends Record & Serializable, K extends Serializable>
         return 0;
     }
 
+    /**
+     * NextId to generate unique keys.
+     *
+     * @return the next number.
+     */
+    int nextId();
     /**
      * Default no-op close.
      *
@@ -276,7 +291,7 @@ public interface DAO<R extends Record & Serializable, K extends Serializable>
      *
      * @return the mapper.
      */
-    Mapper<R, K> getMapper();
+    io.github.jristretto.mappers.Mapper<R, K> getMapper();
 
     /**
      * Extract the key field from an entity.
@@ -336,8 +351,16 @@ public interface DAO<R extends Record & Serializable, K extends Serializable>
     }
 
     /**
-     * Remove the generated fields from the stream, so they can be sued to
+     * Remove the generated fields from the stream, so they can be used to
      * populate declare and populate a prepared statement.
+     *
+     * The fields are generated when
+     * <ul>
+     * <li> (The field is annotated with {@code @Generated} or
+     * <li> The field is annotated with {@code @ID} and
+     * {@code @ID(generatd=true)})
+     * <li> and the field is null.
+     * </ul>
      *
      * @param entity to process
      *

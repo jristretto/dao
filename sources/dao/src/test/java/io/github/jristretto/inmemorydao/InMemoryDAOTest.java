@@ -4,8 +4,8 @@
  */
 package io.github.jristretto.inmemorydao;
 
-import io.github.jristretto.inmemorydao.InMemoryDAO;
 import io.github.jristretto.dao.Employee;
+import static io.github.jristretto.dao.Employee.Gender.*;
 import io.github.jristretto.mappers.AbstractMapper;
 import io.github.jristretto.mappers.Mapper;
 import java.time.LocalDate;
@@ -13,38 +13,20 @@ import java.time.Month;
 import java.util.List;
 import java.util.Optional;
 import io.github.jristretto.inmemorydao.InMemoryDAO.EqualMask;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 //import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.*;
+import org.junit.jupiter.api.DisplayName;
+import testdata.TestData;
 
 /**
  *
  * @author Pieter van den Hombergh {@code <pieter.van.den.hombergh@gmail.com>}
  */
-public class InMemoryDAOTest {
+public class InMemoryDAOTest implements TestData {
 
     InMemoryDAO<Employee, Integer> dao;
-
-    Employee jean = new Employee( 1, "Klaassen", "Jean",
-            "jan@example.com", 1, true, LocalDate.of( 1991,
-                    2, 23 ),
-            LocalDate.of( 1973, Month.MARCH, 4 ) );
-    Employee jean2 = new Employee( 1, "Klaassen", "Jean",
-            "jan@example.com", 0, false, LocalDate.of( 1991,
-                    2, 23 ),
-            LocalDate.of( 1973, Month.MARCH, 4 ) );
-    Employee piet = new Employee( 2, "Puk", "Piet",
-            "piet@somewhere.com", 1, false, LocalDate.of( 1999,
-                    12, 23 ),
-            LocalDate.of( 2023, Month.MARCH, 4 ) );
-    Employee janneke = new Employee( 3, "Puk", "Janneke",
-            "piet@somewhere.com", 5, false, LocalDate.of( 1999,
-                    12, 23 ),
-            LocalDate.of( 2023, Month.MARCH, 4 ) );
-    Employee karen = new Employee( 3, "Heinz", "Karen",
-            "piet@somewhere.com", 5, false, LocalDate.of( 1999,
-                    12, 23 ),
-            LocalDate.of( 2023, Month.MARCH, 4 ) );
 
     public InMemoryDAOTest() {
         dao = new InMemoryDAO<>( Employee.class );
@@ -59,9 +41,9 @@ public class InMemoryDAOTest {
     /**
      * Test of get method, of class InMemoryDAO.
      */
+    @DisplayName( "get" )
     @Test
     public void testGet() {
-        System.out.println( "get" );
         Integer id = piet.employeeid();
         Optional expResult = Optional.of( piet );
         Optional result = dao.get( id );
@@ -73,9 +55,11 @@ public class InMemoryDAOTest {
      * Test of getAll method, of class InMemoryDAO.
      */
     @Test
+    @DisplayName( "getAll" )
     public void testGetAll() {
-        System.out.println( "getAll" );
+        dao.dropAll();
         var expResult = List.of( jean, piet );
+        dao.saveAll( jean, piet );
         var result = dao.getAll();
         assertThat( result )
                 .containsExactlyInAnyOrderElementsOf( expResult );
@@ -85,8 +69,8 @@ public class InMemoryDAOTest {
      * Test of save method, of class InMemoryDAO.
      */
     @Test
+    @DisplayName( "save" )
     public void testSave() {
-        System.out.println( "save" );
         var e = janneke;
         Optional<Employee> expResult = Optional.of( janneke );
         Optional<Employee> result = dao.save( e );
@@ -98,8 +82,8 @@ public class InMemoryDAOTest {
      * Test of update method, of class InMemoryDAO.
      */
     @Test
+    @DisplayName( "update" )
     public void testUpdate() {
-        System.out.println( "update" );
         int beforeSize = dao.size();
         var e = jean2;
         var expResult = jean2;
@@ -114,8 +98,8 @@ public class InMemoryDAOTest {
      * Test of deleteEntity method, of class InMemoryDAO.
      */
     @Test
+    @DisplayName( "deleteEntity" )
     public void testDeleteEntity() {
-        System.out.println( "deleteEntity" );
         int beforeSize = dao.size();
         var e = jean;
         dao.deleteEntity( e );
@@ -130,8 +114,8 @@ public class InMemoryDAOTest {
      * Test of deleteById method, of class InMemoryDAO.
      */
     @Test
+    @DisplayName( "deleteById" )
     public void testDeleteById() {
-        System.out.println( "deleteById" );
         int beforeSize = dao.size();
         var e = piet;
         Integer k = piet.employeeid();
@@ -148,8 +132,8 @@ public class InMemoryDAOTest {
      * Test of selectWhere method, of class InMemoryDAO.
      */
     @Test
+    @DisplayName( "select where" )
     public void testSelectWhere() {
-        System.out.println( "selectWhere" );
         dao.save( janneke );
         Object[] keyValues = new Object[]{ "departmentid", 1 };
         var result = dao.selectWhere( keyValues );
@@ -162,12 +146,12 @@ public class InMemoryDAOTest {
      * Test of equalMask method, of class InMemoryDAO.
      */
     @Test
+    @DisplayName( "equal mask" )
     public void testEqualMask() {
-        System.out.println( "equalMask" );
         Object[] keyValues = { "available", true, "departmentid", 1 };
         EqualMask expResult = new EqualMask(
-                new boolean[]{ false, false, false, false, true, true, false, false },
-                new Object[]{ null, null, null, null, 1, true, null, null } );
+                new boolean[]{ false, false, false, false, true, false, true, false, false },
+                new Object[]{ null, null, null, null, 1, null, true, null, null } );
         EqualMask result = dao.equalMask( keyValues );
         assertThat( result )
                 .as( expResult.toString() + "\n!=" + result.toString() )
@@ -178,11 +162,11 @@ public class InMemoryDAOTest {
      * Test of maskedEqual method, of class InMemoryDAO.
      */
     @Test
+    @DisplayName( "Masked equal true" )
     public void testMaskedEqualTrue() {
-        System.out.println( "maskedEqual" );
         var j = janneke;
-        EqualMask equalMask = dao.equalMask( "departmentid", 5, "firstname",
-                "Janneke" );
+        EqualMask equalMask = dao.equalMask( "departmentid", 5, "gender",
+                F );
         boolean expResult = true;
         boolean result = dao.maskedEqual( j, equalMask );
         assertThat( result )
@@ -193,8 +177,8 @@ public class InMemoryDAOTest {
      * Test of maskedEqual method, of class InMemoryDAO.
      */
     @Test
+    @DisplayName( "Masked equal false" )
     public void testMaskedEqualFalse() {
-        System.out.println( "maskedEqualFalse" );
         var j = karen;
         EqualMask equalMask = dao.equalMask( "departmentid", 5, "firstname",
                 "Janneke" );
@@ -208,8 +192,8 @@ public class InMemoryDAOTest {
      * Test of getMapper method, of class InMemoryDAO.
      */
     @Test
+    @DisplayName( "get mapper" )
     public void testGetMapper() {
-        System.out.println( "getMapper" );
         Mapper expResult = AbstractMapper.mapperFor( Employee.class );
         Mapper result = dao.getMapper();
         assertThat( result )

@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toCollection;
 import java.util.stream.IntStream;
@@ -60,7 +61,7 @@ public interface Mapper<R extends Record & Serializable, K extends Serializable>
      * @return the component pairs
      */
     default Stream<ComponentPair> stream(R r) {
-        var c = r.getClass()
+        var c = entityType()
                 .getRecordComponents();
         Object[] values = asArray( r );
         return IntStream.range( 0, c.length )
@@ -134,8 +135,10 @@ public interface Mapper<R extends Record & Serializable, K extends Serializable>
      * @return a stream.
      */
     default List<ComponentPair> dropGeneratedFields(R entity) {
+        Predicate<ComponentPair> fieldStays = rcp
+                -> null != rcp.value() || !isGenerated( rcp.component() );
         return stream( entity )
-                .filter( rcp -> !isGenerated( rcp.component() ) )
+                .filter( fieldStays )
                 .toList();
     }
 
@@ -157,17 +160,7 @@ public interface Mapper<R extends Record & Serializable, K extends Serializable>
      *
      * @return the map.
      */
-    default Map<String, Integer> componentIndex() {
-        RecordComponent[] recordComponents = entityType()
-                .getRecordComponents();
-        Map.Entry[] entries = new Map.Entry[ recordComponents.length ];
-        for ( int i = 0; i < recordComponents.length; i++ ) {
-            Map.Entry<String, Integer> entry = Map.entry( recordComponents[ i ]
-                    .getName(), i );
-            entries[ i ] = entry;
-        }
-        return Map.ofEntries( entries );
-    }
+    Map<String, Integer> componentIndex();
 
     /**
      * Get the set of names.

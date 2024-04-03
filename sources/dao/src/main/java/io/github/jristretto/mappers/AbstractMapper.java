@@ -1,10 +1,14 @@
 package io.github.jristretto.mappers;
 
 import java.io.Serializable;
+import java.lang.reflect.RecordComponent;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Implements some methods based on the entity and cached the registering
@@ -104,4 +108,15 @@ public abstract class AbstractMapper<R extends Record & Serializable, K extends 
     public Class<R> entityType() {
         return entityType;
     }
+
+    @Override
+    public Map<String, Integer> componentIndex() {
+        RecordComponent[] recordComponents = entityType()
+                .getRecordComponents();
+        return IntStream.range( 0, recordComponents.length )
+                .mapToObj( Integer::valueOf )
+                .collect( Collectors
+                        .toMap( i -> recordComponents[ i ].getName(), i -> i ) );
+    }
+
 }
