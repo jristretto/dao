@@ -4,10 +4,7 @@ package io.github.jristretto.dao;
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/UnitTests/JUnit5TestClass.java to edit this template
  */
-
-
-import io.github.jristretto.dao.DAOServiceFinder;
-import io.github.jristretto.dao.DAOFactory;
+import io.github.jristretto.annotations.DAOFlavor;
 import org.junit.jupiter.api.*;
 import static org.assertj.core.api.Assertions.*;
 
@@ -18,7 +15,7 @@ import static org.assertj.core.api.Assertions.*;
 public class DAOServiceFinderTest {
 
 //@Disabled("think TDD")
-    @Test @DisplayName( "Get the DAO" )
+    @Test @DisplayName( "Get the in memory DAO" )
     public void testGetDAO() {
         DAOFactory daf = new DAOServiceFinder( "inmemory" ).getDAOFactory();
         assertThat( daf )
@@ -32,4 +29,28 @@ public class DAOServiceFinderTest {
 //      fail( "method GetDAO reached end. You know what to do." );
     }
 
+    //@Disabled("think TDD")
+    @Test @DisplayName( "get the default dao" )
+    public void testGetDefaultService() {
+        DAOFactory daf = new DAOServiceFinder().getDAOFactory();
+        assertThat( daf )
+                .isNotNull();
+        System.out.println( "daf = " + daf.getClass()
+                .getCanonicalName() );
+        assertThat( daf.getClass()
+                .getAnnotation( DAOFlavor.class )
+                .value() )
+                .isEqualTo( "inmemory" );
+//        fail( "method GetDefaultService reached end. You know what to do." );
+    }
+
+    //@Disabled("think TDD")
+    @Test @DisplayName( "some story line" )
+    public void testTryNonExistingFlavor() {
+        DAOFactory daf = new DAOServiceFinder( "no-service" ).getDAOFactory();
+
+        assertThat( daf )
+                .isNull();;
+//        fail( "method TryNonExistingFlavor reached end. You know what to do." );
+    }
 }

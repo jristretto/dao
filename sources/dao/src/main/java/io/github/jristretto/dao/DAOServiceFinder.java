@@ -27,12 +27,31 @@ public class DAOServiceFinder {
 
     private final String flavor;
 
+    /**
+     * Create a finder for a specific DAOflavor. Specify the value string here.
+     *
+     * @param flavor value string of the requested flavor.
+     */
     public DAOServiceFinder(String flavor) {
         this.flavor = flavor;
     }
 
+    /**
+     * Create a finder for a the flavor {@code "inmemory"}. Specify the value
+     * string here.
+     *
+     */
+    public DAOServiceFinder() {
+        this( "inmemory" );
+    }
+
     private DAOFactory dafCache;
 
+    /**
+     * Try to get a factory.
+     *
+     * @return null if not found, otherwise an implementation.
+     */
     public DAOFactory getDAOFactory() {
         if ( null != dafCache ) {
             return dafCache;
