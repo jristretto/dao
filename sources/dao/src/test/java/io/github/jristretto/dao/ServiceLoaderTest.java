@@ -5,9 +5,6 @@
 package io.github.jristretto.dao;
 
 import io.github.jristretto.annotations.*;
-import io.github.jristretto.dao.*;
-import io.github.jristretto.annotations.*;
-import java.lang.annotation.Annotation;
 import java.util.ServiceLoader;
 import java.util.ServiceLoader.Provider;
 import java.util.function.Predicate;

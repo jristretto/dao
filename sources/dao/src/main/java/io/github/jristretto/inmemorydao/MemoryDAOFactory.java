@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package io.github.jristretto.inmemorydao;
 
 import io.github.jristretto.dao.DAO;
@@ -29,7 +25,7 @@ public class MemoryDAOFactory implements DAOFactory {
     @Override
     public <E extends java.lang.Record & java.io.Serializable, K extends Serializable> DAO<E, K> createDao(
             Class<E> forClass, TransactionToken token) {
-        throw new UnsupportedOperationException( "Not supported yet." ); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        throw new UnsupportedOperationException( "Not supported yet." );
     }
 
     public static MemoryDAOFactory provider() {
