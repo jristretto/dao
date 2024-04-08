@@ -1,12 +1,12 @@
 package io.github.jristretto.dao;
 
-import io.github.jristretto.mappers.Mapper;
 import io.github.jristretto.annotations.TableName;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import static java.util.stream.Collectors.toList;
 import java.util.stream.StreamSupport;
 //import nl.fontys.sebivenlo.sebiannotations.Generated;
@@ -195,6 +195,7 @@ public interface DAO<R extends Record & Serializable, K extends Serializable>
      * @return the next number.
      */
     int nextId();
+
     /**
      * Default no-op close.
      *
@@ -379,4 +380,16 @@ public interface DAO<R extends Record & Serializable, K extends Serializable>
     default void dropAll() {
     }
 
+    /**
+     * For the fields that have generated values, allow generators to be
+     * registered based on the filed type and specific for this DAO. This
+     * facility exists to make implementations without a real back service (such
+     * ad a RDBMS) to have generated fields. Use case is in mmeory databases.
+     *
+     * @param fieldType for generator 
+     * @param generator
+     */
+    default <X> void addGeneratorForClass(Class<X> fieldType, Function<? extends Serializable, X> generator) {
+
+    }
 }

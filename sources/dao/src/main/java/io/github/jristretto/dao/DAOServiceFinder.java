@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 
 /**
- * Finds the DAO service.
+ * Finds the DAO service by fining hat DAOFactory implementation with a specif flavor.
  *
  * This class uses the ServiceLoader API.
  *

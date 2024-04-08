@@ -16,5 +16,9 @@ import java.lang.annotation.Target;
 @Target( ElementType.TYPE )
 public @interface DAOFlavor {
 
+    /**
+     * A flavor can be used to classify a dao implementation for a service provider.
+     * @return 
+     */
     String value() default "";
 }
