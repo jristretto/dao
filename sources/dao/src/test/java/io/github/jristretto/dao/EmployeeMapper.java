@@ -1,6 +1,7 @@
 package io.github.jristretto.dao;
 
 import io.github.jristretto.mappers.AbstractMapper;
+import java.time.LocalDate;
 import java.util.function.Function;
 
 /**
@@ -37,6 +38,21 @@ class EmployeeMapper extends AbstractMapper<Employee, Integer> {
         };
 
         return result;
+    }
+
+    @Override
+    public Employee newEntity(Object[] components) {
+        return new Employee(
+                Integer.class.cast( components[ 0 ] ),
+                String.class.cast( components[ 1 ] ),
+                String.class.cast( components[ 2 ] ),
+                String.class.cast( components[ 3 ] ),
+                Integer.class.cast( components[ 4 ] ),
+                Employee.Gender.class.cast( components[ 5 ] ),
+                Boolean.class.cast( components[ 6 ] ),
+                LocalDate.class.cast( components[ 7 ] ),
+                LocalDate.class.cast( components[ 8 ] )
+        );
     }
 
 }

@@ -71,7 +71,7 @@ public interface Mapper<R extends Record & Serializable, K extends Serializable>
     /**
      * Map the record to an array of Object.
      *
-     * For performance, this method should be overriden.
+     * For performance, this method should be overridden.
      *
      * @param r to map
      * @return the record compoments in an array.
@@ -174,5 +174,24 @@ public interface Mapper<R extends Record & Serializable, K extends Serializable>
                 .getRecordComponents() )
                 .map( RecordComponent::getName )
                 .collect( toCollection( LinkedHashSet::new ) ) );
+    }
+
+    /**
+     * Construct a new record of type R given the components.
+     *
+     * @param components to use
+     * @return new R.
+     */
+    abstract R newEntity(Object[] components);
+
+    /**
+     * Deconstruct a record so a non-business class such as an Abstract DAO can
+     * deal with it.
+     *
+     * @param entity to deconstruct
+     * @return the components in an array
+     */
+    default Object[] deconstruct(R entity) {
+        return asArray( entity );
     }
 }
