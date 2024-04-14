@@ -42,9 +42,9 @@ public interface Mapper<R extends Record & Serializable, K extends Serializable>
      *
      * @return the RecordComponents
      */
-    default List<Field> entityFields() {
+    default List<RecordComponent> components() {
         return List.of( entityType()
-                .getDeclaredFields() );
+                .getRecordComponents() );
     }
 
     /**
@@ -104,10 +104,10 @@ public interface Mapper<R extends Record & Serializable, K extends Serializable>
      * @return result of test
      */
     default boolean isGenerated(Field f) {
-        ID idannotation = f.getAnnotation( ID.class );
+        ID idAnnotation = f.getAnnotation( ID.class );
         Generated genannotation = f.getAnnotation( Generated.class );
 
-        return null != genannotation || ( null != idannotation && idannotation
+        return null != genannotation || ( null != idAnnotation && idAnnotation
                                          .generated() );
     }
 
@@ -121,10 +121,10 @@ public interface Mapper<R extends Record & Serializable, K extends Serializable>
      * @return result of test
      */
     default boolean isGenerated(RecordComponent rc) {
-        ID idannotation = rc.getAnnotation( ID.class );
+        ID idAnnotation = rc.getAnnotation( ID.class );
         Generated genannotation = rc.getAnnotation( Generated.class );
 
-        return null != genannotation || ( null != idannotation && idannotation
+        return null != genannotation || ( null != idAnnotation && idAnnotation
                                          .generated() );
     }
 

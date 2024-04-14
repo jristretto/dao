@@ -68,7 +68,7 @@ public class DAOServiceFinder {
             dafCache = fac.get();
             return dafCache;
         }
-        System.err.println( "Could not load AbstractAPPFactory" );
+        System.err.println( "Could not load DAOFactory" );
         return null;
     }
 

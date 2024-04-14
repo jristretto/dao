@@ -26,8 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,62 +40,64 @@ import java.util.logging.Logger;
  */
 public class InMemoryDAO<R extends Record & Serializable, K extends Serializable>
         implements DAO<R, K> {
-    
+
     private final Class<R> entityType;
     private final Mapper<R, K> mapper;
-    
+
     private final ConcurrentMap<K, R> storage = new ConcurrentHashMap<>();
     private final String storageFileName;
-    
+
     public InMemoryDAO(Class<R> entityType) {
         this.entityType = entityType;
         mapper = AbstractMapper.mapperFor( entityType );
-        
+
         this.storageFileName = entityType.getCanonicalName() + ".ser";
         if ( Boolean.getBoolean( "memoryDao.persist" ) ) {
             if ( Files.exists( Paths.get( this.storageFileName ) ) ) {
                 System.out.println( "loaded " + storageFileName );
                 this.load( this.storageFileName );
             }
-            
+
             Thread saveThread = new Thread( () -> persistToDisk() );
             Runtime.getRuntime()
                     .addShutdownHook( saveThread );
         }
     }
-    
+
     private static final AtomicInteger serialNumbers = new AtomicInteger();
-    
+
     @Override
     public int lastId() {
         return serialNumbers.get();
     }
-    
+
     @Override
     public int nextId() {
         return serialNumbers.incrementAndGet();
     }
-    
+
     @Override
     public Optional<R> get(K id) {
         return Optional.ofNullable( storage.get( id ) );
     }
-    
+
     @Override
     public List<R> getAll() {
         Collection<R> values = storage.values();
         return List.copyOf( values );
     }
-    
+
     @Override
     public Optional<R> save(R e) {
+        R ra = applyGenerators( e );
         K key = getMapper()
                 .keyExtractor()
-                .apply( e );
-        storage.put( key, e );
-        return Optional.of( e );
+                .apply( ra );
+        System.out.println( "key = " + key );
+        storage.put( key, ra );
+        return Optional.of( ra );
     }
-    
+
     @Override
     public R update(R e) {
         K key = getMapper()
@@ -104,7 +106,7 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
         storage.replace( key, e );
         return e;
     }
-    
+
     @Override
     public void deleteEntity(R e) {
         K key = getMapper()
@@ -112,7 +114,7 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
                 .apply( e );
         deleteById( key );
     }
-    
+
     @Override
     public void deleteById(K k) {
         if ( null == k ) {
@@ -120,7 +122,7 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
         }
         storage.remove( k );
     }
-    
+
     @Override
     public int size() {
         return storage.size();
@@ -141,7 +143,7 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
                 .filter( maskedEqual )
                 .toList();
     }
-    
+
     private void persistToDisk() {
         if ( storage.isEmpty() ) {
             return; // nothing to do
@@ -160,9 +162,10 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
                     .log( Level.SEVERE, null, ex );
         }
     }
-    
+
     private void load(String aStorageName) {
         dropAll();
+
         try ( ObjectInputStream in = new ObjectInputStream(
                 new FileInputStream( aStorageName ) ) ) {
             while ( true ) {
@@ -183,11 +186,41 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
         }
         System.out.println( "read from file " + storage.size() );
     }
-    
-    private static class SerialLongGenerator implements Function<Serializable, Long> {
-        
+
+    /**
+     * For those fields that are annotated as being generated and have a value
+     * indicating that generation is wanted, apply the generator.
+     *
+     * @param e to be adapted.
+     */
+    R applyGenerators(R e) {
+        RecordComponent[] rc = entityType.getRecordComponents();
+        Object[] asArray = getMapper()
+                .asArray( e );
+        for ( int i = 0; i < rc.length; i++ ) {
+//            RecordComponent comp = components.get( i );
+            System.out.println( "comp = " + rc[ i ] );
+            if ( asArray[ i ] == null && mapper.isGenerated( rc[ i ] ) ) {
+                System.out.println( "generated " + rc[ i ] );
+                var s = (Serializable) e;
+                Supplier<? extends Serializable> supplier = generatorMap.get(
+                        rc[ i ].getType() );
+
+                if ( null != supplier ) {
+                    var value = supplier.get();
+                    System.out.println( "value = " + value );
+                    asArray[ i ] = value;
+                }
+            }
+
+        }
+        return mapper.newEntity( asArray );
+    }
+
+    private static class SerialLongGenerator implements Supplier<  Long> {
+
         private AtomicLong value = new AtomicLong();
-        
+
         public SerialLongGenerator() {
         }
 
@@ -200,10 +233,32 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
         }
 
         @Override
-        public Long apply(Serializable t) {
+        public Long get() {
             return nextValue();
         }
-        
+
+    }
+
+    private static class SerialIntegerGenerator implements Supplier<  Integer> {
+
+        private AtomicInteger value = new AtomicInteger();
+
+        public SerialIntegerGenerator() {
+        }
+
+        int nextValue() {
+            return value.incrementAndGet();
+        }
+
+        void presetTo(int v) {
+            value.set( v );
+        }
+
+        @Override
+        public Integer get() {
+            return nextValue();
+        }
+
     }
 
     /**
@@ -211,25 +266,25 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
      */
     record EqualMask<X extends Record & Serializable>(boolean[] mask,
             Object[] values) {
-        
+
         EqualMask  {
             if ( mask.length != values.length ) {
                 throw new IllegalArgumentException(
                         "arguments must have same length" );
             }
         }
-        
+
         @Override
         public String toString() {
             return Arrays.toString( mask ) + "\n" + Arrays.toString( values );
         }
-        
+
         public int hashCode() {
             return Arrays.hashCode( mask ) << 31 + Arrays.hashCode( values );
         }
-        
+
         public boolean equals(Object obj) {
-            if ( !(obj instanceof EqualMask other) ) {
+            if ( !( obj instanceof EqualMask other ) ) {
                 return false;
             }
             return Arrays.equals( values, other.values ) && Arrays
@@ -273,7 +328,7 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
      */
     boolean maskedEqual(R r, EqualMask equalMask) {
         Object[] asArray = mapper.asArray( r );
-        
+
         for ( int i = 0; i < equalMask.mask.length; i++ ) {
             if ( equalMask.mask[ i ] && !Objects.equals( asArray[ i ],
                     equalMask.values[ i ] ) ) {
@@ -282,23 +337,24 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
         }
         return true;
     }
-    
+
     @Override
     public Mapper<R, K> getMapper() {
         return AbstractMapper.mapperFor( entityType );
     }
-    
+
     @Override
     public void dropAll() {
         storage.clear();
         serialNumbers.set( 0 );
     }
-    
-    static final Map<Class<? extends Serializable>, Function<? extends Serializable, ?>> generatorMap
+
+    static final Map<Class<? extends Serializable>, Supplier<? extends Serializable>> generatorMap
             = new HashMap<>();
-    
+
     static {
-        generatorMap.put( Long.class, new SerialLongGenerator());
-        generatorMap.put(LocalDate.class, x -> LocalDate.now());
+        generatorMap.put( Long.class, new SerialLongGenerator() );
+        generatorMap.put( Integer.class, new SerialIntegerGenerator() );
+        generatorMap.put( LocalDate.class, () -> LocalDate.now() );
     }
 }

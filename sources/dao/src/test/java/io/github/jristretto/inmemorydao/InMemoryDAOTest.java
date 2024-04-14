@@ -8,12 +8,10 @@ import io.github.jristretto.dao.Employee;
 import static io.github.jristretto.dao.Employee.Gender.*;
 import io.github.jristretto.mappers.AbstractMapper;
 import io.github.jristretto.mappers.Mapper;
-import java.time.LocalDate;
-import java.time.Month;
 import java.util.List;
 import java.util.Optional;
 import io.github.jristretto.inmemorydao.InMemoryDAO.EqualMask;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.lang.reflect.RecordComponent;
 import org.junit.jupiter.api.Test;
 //import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.*;
@@ -36,6 +34,29 @@ public class InMemoryDAOTest implements TestData {
         saved = dao.save( piet );
         assertThat( saved.get() )
                 .isEqualTo( piet );
+    }
+
+    //@Disabled("think TDD")
+    @Test @DisplayName( "test applyGenerators not null" )
+    public void testApplyGenerators() {
+        InMemoryDAO<Employee, Integer> idao = (InMemoryDAO<Employee, Integer>) dao;
+        var jean2 = idao.applyGenerators( jean );
+        System.out.println( "jean2 = " + jean2 );
+        assertThat( jean2 )
+                .isEqualTo( jean );
+//        fail( "method ApplyGenerators reached end. You know what to do." );
+    }
+
+    //@Disabled("think TDD")
+    @Test @DisplayName( "test applyGenerators not null" )
+    public void testApplyGenerators2() {
+        InMemoryDAO<Employee, Integer> idao = (InMemoryDAO<Employee, Integer>) dao;
+        var janneke2 = idao.applyGenerators( janneke );
+
+        System.out.println( "janneke2 =" + janneke2 );
+        assertThat( janneke2.employeeid() )
+                .isNotNull();
+//        fail( "method ApplyGenerators reached end. You know what to do." );
     }
 
     /**
@@ -74,8 +95,9 @@ public class InMemoryDAOTest implements TestData {
         var e = janneke;
         Optional<Employee> expResult = Optional.of( janneke );
         Optional<Employee> result = dao.save( e );
-        assertThat( result )
-                .isEqualTo( expResult );
+        assertThat( result.get()
+                .employeeid() )
+                .isNotNull();
     }
 
     /**
@@ -198,6 +220,16 @@ public class InMemoryDAOTest implements TestData {
         Mapper result = dao.getMapper();
         assertThat( result )
                 .isEqualTo( expResult );
+    }
+
+    //@Disabled("think TDD")
+    @Test @DisplayName( "some story line" )
+    public void testJannekeShouldGetGeneratedComponents() {
+        Employee jannekeG = dao.applyGenerators( janneke );
+
+        assertThat( jannekeG.employeeid() )
+                .isNotNull();
+//        fail( "method JannekeShouldGetGeneratedComponents reached end. You know what to do." );
     }
 
 }

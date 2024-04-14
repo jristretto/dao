@@ -2,7 +2,7 @@ package io.github.jristretto.dao;
 
 import io.github.jristretto.annotations.TableName;
 import java.io.Serializable;
-import java.lang.reflect.Field;
+import java.lang.reflect.RecordComponent;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -316,9 +316,9 @@ public interface DAO<R extends Record & Serializable, K extends Serializable>
      */
     default List<String> persistentFieldNames() {
         return getMapper()
-                .entityFields()
+                .components()
                 .stream()
-                .map( Field::getName )
+                .map( RecordComponent::getName )
                 .collect( toList() );
     }
 
@@ -386,7 +386,7 @@ public interface DAO<R extends Record & Serializable, K extends Serializable>
      * facility exists to make implementations without a real back service (such
      * ad a RDBMS) to have generated fields. Use case is in mmeory databases.
      *
-     * @param fieldType for generator 
+     * @param fieldType for generator
      * @param generator
      */
     default <X> void addGeneratorForClass(Class<X> fieldType, Function<? extends Serializable, X> generator) {

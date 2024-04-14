@@ -25,6 +25,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <compilerArgs>-Xlint:unchecked</compilerArgs>
+                    <showDeprecation>true</showDeprecation>
                 </configuration>
                     
             </plugin>
