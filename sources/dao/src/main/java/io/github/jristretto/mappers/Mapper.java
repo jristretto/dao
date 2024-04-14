@@ -4,7 +4,6 @@ import io.github.jristretto.annotations.Generated;
 import io.github.jristretto.annotations.ID;
 import io.github.jristretto.dao.ComponentPair;
 import java.io.Serializable;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.RecordComponent;
@@ -92,23 +91,6 @@ public interface Mapper<R extends Record & Serializable, K extends Serializable>
         }
 
         return result;
-    }
-
-    /**
-     * Check if a field is generated.
-     *
-     * A field is generated when it has the annotation Generated or ID with
-     * generated==true (the default).
-     *
-     * @param f to test
-     * @return result of test
-     */
-    default boolean isGenerated(Field f) {
-        ID idAnnotation = f.getAnnotation( ID.class );
-        Generated genannotation = f.getAnnotation( Generated.class );
-
-        return null != genannotation || ( null != idAnnotation && idAnnotation
-                                         .generated() );
     }
 
     /**

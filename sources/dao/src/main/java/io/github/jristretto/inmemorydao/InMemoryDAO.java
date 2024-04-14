@@ -93,7 +93,6 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
         K key = getMapper()
                 .keyExtractor()
                 .apply( ra );
-        System.out.println( "key = " + key );
         storage.put( key, ra );
         return Optional.of( ra );
     }
@@ -171,11 +170,9 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
             while ( true ) {
                 R r = mapper.entityType()
                         .cast( in.readObject() );
-                System.out.println( "r = " + r );
                 this.storage.put( mapper.keyExtractor()
                         .apply( r ), r );
             }
-//            this.storage.putAll( readMap );
 
         } catch ( FileNotFoundException ex ) {
             Logger.getLogger( InMemoryDAO.class.getName() )
@@ -193,22 +190,17 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
      *
      * @param e to be adapted.
      */
-    R applyGenerators(R e) {
+    public R applyGenerators(R e) {
         RecordComponent[] rc = entityType.getRecordComponents();
         Object[] asArray = getMapper()
                 .asArray( e );
         for ( int i = 0; i < rc.length; i++ ) {
-//            RecordComponent comp = components.get( i );
-            System.out.println( "comp = " + rc[ i ] );
             if ( asArray[ i ] == null && mapper.isGenerated( rc[ i ] ) ) {
-                System.out.println( "generated " + rc[ i ] );
                 var s = (Serializable) e;
                 Supplier<? extends Serializable> supplier = generatorMap.get(
                         rc[ i ].getType() );
-
                 if ( null != supplier ) {
                     var value = supplier.get();
-                    System.out.println( "value = " + value );
                     asArray[ i ] = value;
                 }
             }

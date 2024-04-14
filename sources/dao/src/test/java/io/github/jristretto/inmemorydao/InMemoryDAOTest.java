@@ -11,7 +11,6 @@ import io.github.jristretto.mappers.Mapper;
 import java.util.List;
 import java.util.Optional;
 import io.github.jristretto.inmemorydao.InMemoryDAO.EqualMask;
-import java.lang.reflect.RecordComponent;
 import org.junit.jupiter.api.Test;
 //import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.*;
@@ -39,8 +38,7 @@ public class InMemoryDAOTest implements TestData {
     //@Disabled("think TDD")
     @Test @DisplayName( "test applyGenerators not null" )
     public void testApplyGenerators() {
-        InMemoryDAO<Employee, Integer> idao = (InMemoryDAO<Employee, Integer>) dao;
-        var jean2 = idao.applyGenerators( jean );
+        var jean2 = dao.applyGenerators( jean );
         System.out.println( "jean2 = " + jean2 );
         assertThat( jean2 )
                 .isEqualTo( jean );
@@ -50,8 +48,7 @@ public class InMemoryDAOTest implements TestData {
     //@Disabled("think TDD")
     @Test @DisplayName( "test applyGenerators not null" )
     public void testApplyGenerators2() {
-        InMemoryDAO<Employee, Integer> idao = (InMemoryDAO<Employee, Integer>) dao;
-        var janneke2 = idao.applyGenerators( janneke );
+        var janneke2 = dao.applyGenerators( janneke );
 
         System.out.println( "janneke2 =" + janneke2 );
         assertThat( janneke2.employeeid() )
