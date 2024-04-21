@@ -13,8 +13,4 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target( { ElementType.FIELD, ElementType.RECORD_COMPONENT, ElementType.METHOD } )
 public @interface Resource {
-    /**
-     * The resource may have a well known name.
-     */
-    String value() default "";
 }

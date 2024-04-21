@@ -1,0 +1,50 @@
+= DAO (Data Access Object)
+
+A DAO (Data Access Object) is a design pattern that provides an interface to interact with a database or any other persistence mechanism. It encapsulates the logic for accessing and manipulating data, allowing the rest of the application to be decoupled from the underlying data storage.
+
+== Creating a DAO
+
+To create a DAO, you typically follow these steps:
+
+1. Define an interface that specifies the operations to be performed on the data.
+2. Implement the interface with a concrete class that interacts with the data storage.
+3. Use the DAO in your application to perform CRUD (Create, Read, Update, Delete) operations on the data.
+
+[source,java]
+----
+public interface UserDao {
+    User findById(int id);
+    List<User> findAll();
+    void save(User user);
+    void update(User user);
+    void delete(User user);
+}
+
+public class UserDaoImpl implements UserDao {
+    // Implementation details
+}
+----
+
+== Benefits of using a DAO
+
+Using a DAO has several benefits, including:
+
+- Separation of concerns: The DAO isolates the data access logic from the rest of the application, making it easier to maintain and test.
+- Code reusability: The DAO can be reused across different parts of the application, promoting code reuse and reducing duplication.
+- Database independence: The DAO abstracts the underlying data storage, allowing you to switch databases or persistence mechanisms without affecting the rest of the application.
+
+== Do write/code but generate.
+
+The DAO above implies that an interface needs to be written and then a concrete class needs to be written. This is a lot of boilerplate code that can be generated.
+To make the generator less complex, we set some constraints:
+* The interface is generic and may have an abstract helper subclass that takes away the need to generate a lot of code.
+* The is a also a rule for the entities: The entity can have at most one id fiueld, typically the primary key. This is a constraint that is often used in practice.
+** That id field must be of type int, long, or the wrapper classes of these types.
+* Other generated fields are not of these types, and when generation is required, then a gerator `Spupplier<T>` must be given.
+
+
+
+
+== Conclusion
+
+The DAO pattern is a powerful tool for managing data access in your application. By encapsulating the data access logic in a separate layer, you can achieve better separation of concerns and improve the maintainability and testability of your code.

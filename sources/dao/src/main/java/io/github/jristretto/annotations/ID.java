@@ -8,9 +8,10 @@ import java.lang.annotation.Target;
 /**
  * Identifies the ID field of an Entity.
  *
- * Just adding the annotation will tag the id generated, i.e. typically using
- * some sequence. Use @ID(generated=false) if you have a natural key that should
- * NOT be generated.
+ * Just adding the annotation will tag the field to have a generated value, i.e.
+ * typically using some sequence. Use @ID(generated=false) if you have a natural
+ * key that should NOT be generated. The ID annotation should be used once per
+ * entity.
  *
  * There is companion annotation {@link Generated} that can be used in case the
  * ID annotation is set on a field that is NOT generated {@code @ID( generated = false)
