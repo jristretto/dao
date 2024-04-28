@@ -18,10 +18,11 @@ import testdata.TestData;
 public class AnnotationTest implements TestData {
 //@Disabled("think TDD")
 
+    RecordComponent[] recordComponents = Employee.class
+            .getRecordComponents();
+
     @Test @DisplayName( "test ID present on comp[0] generated true" )
     public void testID() {
-        RecordComponent[] recordComponents = Employee.class
-                .getRecordComponents();
         ID annotation = recordComponents[ 0 ].getAnnotation( ID.class );
         assertThat( annotation )
                 .isNotNull();
@@ -33,8 +34,6 @@ public class AnnotationTest implements TestData {
 
     @Test @DisplayName( "Hire date is generated " )
     public void testHireDate() {
-        RecordComponent[] recordComponents = Employee.class
-                .getRecordComponents();
         Generated annotation = recordComponents[ 8 ].getAnnotation(
                 Generated.class );
         assertThat( annotation )
@@ -48,12 +47,10 @@ public class AnnotationTest implements TestData {
     public void testGetGeneratedComponents() {
         Mapper<Employee, Integer> mapper = AbstractMapper.mapperFor(
                 Employee.class );
-        RecordComponent[] rc = Employee.class
-                .getRecordComponents();
-        boolean generated = mapper.isGenerated( rc[ 0 ] );
+        boolean generated = mapper.isGenerated( recordComponents[ 0 ] );
         assertThat( generated )
                 .isTrue();
-        generated = mapper.isGenerated( rc[ 8 ] );
+        generated = mapper.isGenerated( recordComponents[ 8 ] );
         assertThat( generated )
                 .isTrue();
 //        fail( "method JannekeShouldGetGeneratedFields reached end. You know what to do." );

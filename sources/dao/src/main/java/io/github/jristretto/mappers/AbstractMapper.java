@@ -91,15 +91,33 @@ public abstract class AbstractMapper<R extends Record & Serializable, K extends 
     }
 
     private final Class<R> entityType;
+    private final RecordComponent[] recordComponents;
+
+    @Override
+    public RecordComponent[] recordComponents() {
+        return recordComponents;
+    }
 
     /**
-     * Create a mapper for a type.
+     * Create a mapper for a type. Do a study on the entity type, to eagerly
+     * cache most used information.
      *
      * @param entityType cached entity type.
      */
     public AbstractMapper(Class<R> entityType) {
+//        if ( !entityType.isRecord() ) {
+//            throw new IllegalArgumentException(
+//                    entityType.descriptorString() + " is not a record type" );
+//        }
         this.entityType = entityType;
+        this.recordComponents = this.entityType.getRecordComponents();
+        this.componentIndex = IntStream.range( 0, recordComponents.length )
+                .mapToObj( Integer::valueOf )
+                .collect( Collectors
+                        .toMap( i -> recordComponents[ i ].getName(), i -> i ) );
     }
+
+    private final Map<String, Integer> componentIndex;
 
     /**
      * Get the mapped type.
@@ -113,12 +131,7 @@ public abstract class AbstractMapper<R extends Record & Serializable, K extends 
 
     @Override
     public Map<String, Integer> componentIndex() {
-        RecordComponent[] recordComponents = entityType()
-                .getRecordComponents();
-        return IntStream.range( 0, recordComponents.length )
-                .mapToObj( Integer::valueOf )
-                .collect( Collectors
-                        .toMap( i -> recordComponents[ i ].getName(), i -> i ) );
+        return componentIndex;
     }
 
 }

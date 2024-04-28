@@ -9,9 +9,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import static java.util.stream.Collectors.toList;
 import java.util.stream.StreamSupport;
-//import nl.fontys.sebivenlo.sebiannotations.Generated;
-//import nl.fontys.sebivenlo.sebiannotations.ID;
-//import nl.fontys.sebivenlo.sebiannotations.TableName;
 
 /**
  * Data Access Object with transactions.
@@ -179,22 +176,6 @@ public interface DAO<R extends Record & Serializable, K extends Serializable>
     default int size() {
         return 0;
     }
-
-    /**
-     * Get the highest id used in this DAO.
-     *
-     * @return the last used number.
-     */
-    default int lastId() {
-        return 0;
-    }
-
-    /**
-     * NextId to generate unique keys.
-     *
-     * @return the next number.
-     */
-    int nextId();
 
     /**
      * Default no-op close.

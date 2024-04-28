@@ -40,8 +40,6 @@ public class DAOTest implements TestData {
                 .isNull();
         assertThat( dao.size() )
                 .isGreaterThanOrEqualTo( 0 );
-        assertThat( dao.lastId() )
-                .isGreaterThanOrEqualTo( 0 );
         try {
             dao.close();
         } catch ( Exception e ) {

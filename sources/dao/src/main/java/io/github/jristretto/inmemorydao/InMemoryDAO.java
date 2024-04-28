@@ -1,5 +1,6 @@
 package io.github.jristretto.inmemorydao;
 
+import io.github.jristretto.annotations.ID;
 import io.github.jristretto.dao.DAO;
 import io.github.jristretto.mappers.AbstractMapper;
 import io.github.jristretto.mappers.Mapper;
@@ -26,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -47,6 +49,9 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
     private final ConcurrentMap<K, R> storage = new ConcurrentHashMap<>();
     private final String storageFileName;
 
+    private final SerialGenerator<K> keyGenerator;
+    private int keyIndex;
+
     public InMemoryDAO(Class<R> entityType) {
         this.entityType = entityType;
         mapper = AbstractMapper.mapperFor( entityType );
@@ -57,24 +62,15 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
                 System.out.println( "loaded " + storageFileName );
                 this.load( this.storageFileName );
             }
-
             Thread saveThread = new Thread( () -> persistToDisk() );
             Runtime.getRuntime()
                     .addShutdownHook( saveThread );
         }
+        this.keyGenerator = computeGenerator();
+        this.keyIndex = keyIndex();
     }
 
     private static final AtomicInteger serialNumbers = new AtomicInteger();
-
-    @Override
-    public int lastId() {
-        return serialNumbers.get();
-    }
-
-    @Override
-    public int nextId() {
-        return serialNumbers.incrementAndGet();
-    }
 
     @Override
     public Optional<R> get(K id) {
@@ -90,27 +86,27 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
     @Override
     public Optional<R> save(R e) {
         R ra = applyGenerators( e );
-        K key = getMapper()
-                .keyExtractor()
-                .apply( ra );
+        K key = extractKey( ra );
         storage.put( key, ra );
         return Optional.of( ra );
     }
 
-    @Override
-    public R update(R e) {
+    K extractKey(R ra) {
         K key = getMapper()
                 .keyExtractor()
-                .apply( e );
+                .apply( ra );
+        return key;
+    }
+
+    public R update(R e) {
+        K key = extractKey( e );
         storage.replace( key, e );
         return e;
     }
 
     @Override
     public void deleteEntity(R e) {
-        K key = getMapper()
-                .keyExtractor()
-                .apply( e );
+        K key = extractKey( e );
         deleteById( key );
     }
 
@@ -189,27 +185,53 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
      * indicating that generation is wanted, apply the generator.
      *
      * @param e to be adapted.
+     * @return a new entity with generated fields filled in.
      */
     public R applyGenerators(R e) {
-        RecordComponent[] rc = entityType.getRecordComponents();
-        Object[] asArray = getMapper()
-                .asArray( e );
-        for ( int i = 0; i < rc.length; i++ ) {
-            if ( asArray[ i ] == null && mapper.isGenerated( rc[ i ] ) ) {
-                var s = (Serializable) e;
-                Supplier<? extends Serializable> supplier = generatorMap.get(
-                        rc[ i ].getType() );
-                if ( null != supplier ) {
-                    var value = supplier.get();
-                    asArray[ i ] = value;
-                }
-            }
-
+        Object[] componentArray = getMapper().asArray( e );
+        if ( null == keyGenerator ) {
+            return mapper.newEntity( componentArray );
         }
-        return mapper.newEntity( asArray );
+        if ( null == componentArray[ keyIndex ] ) {
+            componentArray[ keyIndex ] = keyGenerator.get();
+        } else {
+            keyGenerator.accept( (K) componentArray[ keyIndex ] );
+        }
+        return mapper.newEntity( componentArray );
     }
 
-    private static class SerialLongGenerator implements Supplier<  Long> {
+    @SuppressWarnings( " unchecked" )
+    private SerialGenerator<K> computeGenerator() {
+        RecordComponent keyComponent = mapper.recordComponents()[ keyIndex ];
+        ID annotation = keyComponent.getAnnotation( ID.class );
+        if ( null == annotation ) {
+            return null;
+        }
+        Class<?> compType = keyComponent.getType();
+
+        if ( compType == Integer.class ) {
+            return (SerialGenerator<K>) new SerialIntegerGenerator();
+        } else if ( compType == Long.class ) {
+            return (SerialGenerator<K>) new SerialLongGenerator();
+        }
+        return null;
+    }
+
+    private int keyIndex() {
+        RecordComponent[] recordComponents = mapper.recordComponents();
+        for ( int i = 0; i < recordComponents.length; i++ ) {
+            if ( null != recordComponents[ i ].getAnnotation( ID.class ) ) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    interface SerialGenerator<S> extends Supplier<S>, Consumer<S> {
+
+    }
+
+    private static class SerialLongGenerator implements SerialGenerator<Long> {
 
         private AtomicLong value = new AtomicLong();
 
@@ -229,9 +251,14 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
             return nextValue();
         }
 
+        @Override
+        public void accept(Long t) {
+            value.set( Math.max( value.get(), t.longValue() ) );
+        }
     }
 
-    private static class SerialIntegerGenerator implements Supplier<  Integer> {
+    private static class SerialIntegerGenerator implements
+            SerialGenerator<Integer> {
 
         private AtomicInteger value = new AtomicInteger();
 
@@ -249,6 +276,11 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
         @Override
         public Integer get() {
             return nextValue();
+        }
+
+        @Override
+        public void accept(Integer t) {
+            value.set( Math.max( value.get(), t.intValue() ) );
         }
 
     }
@@ -282,6 +314,7 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
             return Arrays.equals( values, other.values ) && Arrays
                     .equals( mask, other.mask );
         }
+
     }
 
     /**
@@ -291,7 +324,7 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
      * @return the mask.
      */
     EqualMask equalMask(Object... keyValues) {
-        RecordComponent[] recordComponents = entityType.getRecordComponents();
+        RecordComponent[] recordComponents = mapper.recordComponents();
         boolean[] b = new boolean[ recordComponents.length ];
         Object[] testedValues = new Object[ recordComponents.length ];
         Set<String> componentNames = getMapper()

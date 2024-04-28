@@ -42,9 +42,16 @@ public interface Mapper<R extends Record & Serializable, K extends Serializable>
      * @return the RecordComponents
      */
     default List<RecordComponent> components() {
-        return List.of( entityType()
-                .getRecordComponents() );
+        return List.of( recordComponents() );
     }
+
+    /**
+     * Get the record components for a cache. The array is not supposed to be
+     * modified by the user.
+     *
+     * @return the components.
+     */
+    RecordComponent[] recordComponents();
 
     /**
      * Get the mapped entity type.
@@ -60,8 +67,7 @@ public interface Mapper<R extends Record & Serializable, K extends Serializable>
      * @return the component pairs
      */
     default Stream<ComponentPair> stream(R r) {
-        var c = entityType()
-                .getRecordComponents();
+        RecordComponent[] c = recordComponents();
         Object[] values = asArray( r );
         return IntStream.range( 0, c.length )
                 .mapToObj( i -> new ComponentPair( c[ i ], values[ i ] ) );
@@ -73,12 +79,11 @@ public interface Mapper<R extends Record & Serializable, K extends Serializable>
      * For performance, this method should be overridden.
      *
      * @param r to map
-     * @return the record compoments in an array.
+     * @return the record components in an array.
      */
     default Object[] asArray(R r) {
 
-        var c = r.getClass()
-                .getRecordComponents();
+        var c = recordComponents();
         Object[] result = new Object[ c.length ];
         try {
             for ( int i = 0; i < result.length; i++ ) {
@@ -87,9 +92,7 @@ public interface Mapper<R extends Record & Serializable, K extends Serializable>
                 result[ i ] = accessor.invoke( r );
             }
         } catch ( IllegalAccessException | InvocationTargetException ex ) {
-
         }
-
         return result;
     }
 
@@ -152,8 +155,7 @@ public interface Mapper<R extends Record & Serializable, K extends Serializable>
      * @return a set
      */
     default Set<String> componentNames() {
-        return Set.copyOf( Stream.of( entityType()
-                .getRecordComponents() )
+        return Set.copyOf( Stream.of( recordComponents() )
                 .map( RecordComponent::getName )
                 .collect( toCollection( LinkedHashSet::new ) ) );
     }
@@ -176,4 +178,5 @@ public interface Mapper<R extends Record & Serializable, K extends Serializable>
     default Object[] deconstruct(R entity) {
         return asArray( entity );
     }
+
 }
