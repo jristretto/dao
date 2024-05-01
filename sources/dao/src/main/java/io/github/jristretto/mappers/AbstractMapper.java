@@ -2,13 +2,17 @@ package io.github.jristretto.mappers;
 
 import java.io.Serializable;
 import java.lang.reflect.RecordComponent;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import static java.util.stream.Collectors.toCollection;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * Implements some methods based on the entity and cached the registering
@@ -132,6 +136,18 @@ public abstract class AbstractMapper<R extends Record & Serializable, K extends 
     @Override
     public Map<String, Integer> componentIndex() {
         return componentIndex;
+    }
+
+    private Set<String> componentNames = null;
+
+    @Override
+    public Set<String> componentNames() {
+        if ( null == componentNames ) {
+            componentNames = Set.copyOf( Stream.of( recordComponents() )
+                    .map( RecordComponent::getName )
+                    .collect( toCollection( LinkedHashSet::new ) ) );
+        }
+        return componentNames;
     }
 
 }

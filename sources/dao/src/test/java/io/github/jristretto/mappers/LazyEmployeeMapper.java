@@ -1,7 +1,5 @@
 package io.github.jristretto.mappers;
 
-import io.github.jristretto.dao.Employee;
-import io.github.jristretto.mappers.AbstractMapper;
 import java.time.LocalDate;
 import java.util.function.Function;
 
@@ -38,14 +36,6 @@ class LazyEmployeeMapper extends AbstractMapper<LazyEmployee, Integer> {
                 LocalDate.class.cast( components[ 7 ] ),
                 LocalDate.class.cast( components[ 8 ] )
         );
-    }
-
-    @Override
-    public Object[] asArray(LazyEmployee r) {
-
-        return new Object[]{ r.employeeid(), r.lastname(), r.firstname(), r
-                             .email(), r.departmentid(), r.gender(), r
-                             .available(), r.dob(), r.hiredate() };
     }
 
 }

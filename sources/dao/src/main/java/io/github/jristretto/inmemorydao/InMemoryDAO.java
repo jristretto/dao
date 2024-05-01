@@ -132,7 +132,8 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
     @Override
     public List<R> selectWhere(Object... keyValues) {
         EqualMask equalMask = equalMask( keyValues );
-        Predicate<R> maskedEqual = r -> maskedEqual( r, equalMask );
+        Predicate<R> maskedEqual = r -> equalMask.maskedEqual( mapper
+                .asArray( r ) );
         return this.storage.values()
                 .stream()
                 .filter( maskedEqual )
@@ -228,10 +229,10 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
     }
 
     interface SerialGenerator<S> extends Supplier<S>, Consumer<S> {
-
     }
 
-    private static class SerialLongGenerator implements SerialGenerator<Long> {
+    private static final class SerialLongGenerator implements
+            SerialGenerator<Long> {
 
         private AtomicLong value = new AtomicLong();
 
@@ -253,11 +254,11 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
 
         @Override
         public void accept(Long t) {
-            value.set( Math.max( value.get(), t.longValue() ) );
+            presetTo( Math.max( value.get(), t ) );
         }
     }
 
-    private static class SerialIntegerGenerator implements
+    private static final class SerialIntegerGenerator implements
             SerialGenerator<Integer> {
 
         private AtomicInteger value = new AtomicInteger();
@@ -280,7 +281,7 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
 
         @Override
         public void accept(Integer t) {
-            value.set( Math.max( value.get(), t.intValue() ) );
+            presetTo( Math.max( value.get(), t.intValue() ) );
         }
 
     }
@@ -288,39 +289,41 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
     /**
      * Helper for masked equal test.
      */
-    record EqualMask<X extends Record & Serializable>(boolean[] mask,
+    public record EqualMask<X extends Record & Serializable>(boolean[] mask,
             Object[] values) {
 
-        EqualMask  {
+        public EqualMask  {
             if ( mask.length != values.length ) {
                 throw new IllegalArgumentException(
                         "arguments must have same length" );
             }
         }
 
-        @Override
-        public String toString() {
-            return Arrays.toString( mask ) + "\n" + Arrays.toString( values );
-        }
-
-        public int hashCode() {
-            return Arrays.hashCode( mask ) << 31 + Arrays.hashCode( values );
-        }
-
-        public boolean equals(Object obj) {
-            if ( !( obj instanceof EqualMask other ) ) {
-                return false;
+        /**
+         * Test for equal based on equalMask. The test short circuits on first
+         * unequal component.
+         *
+         * @param components of record to test
+         * @return test result
+         */
+        public boolean maskedEqual(Object[] components) {
+            for ( int i = 0; i < this.mask.length; i++ ) {
+                if ( mask[ i ] && !Objects.equals( components[ i ],
+                        values[ i ] ) ) {
+                    return false;
+                }
             }
-            return Arrays.equals( values, other.values ) && Arrays
-                    .equals( mask, other.mask );
+            return true;
         }
-
     }
 
     /**
-     * Build an equal mask fro the given keyValues.
+     * Build an equal mask from the given keyValues. The key values are used to
+     * test the records for equality of the named record component to the values
+     * given.
      *
-     * @param keyValues to use
+     *
+     * @param keyValues (String, Object)+ to use
      * @return the mask.
      */
     EqualMask equalMask(Object... keyValues) {
@@ -353,14 +356,7 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
      */
     boolean maskedEqual(R r, EqualMask equalMask) {
         Object[] asArray = mapper.asArray( r );
-
-        for ( int i = 0; i < equalMask.mask.length; i++ ) {
-            if ( equalMask.mask[ i ] && !Objects.equals( asArray[ i ],
-                    equalMask.values[ i ] ) ) {
-                return false;
-            }
-        }
-        return true;
+        return equalMask.maskedEqual( asArray );
     }
 
     @Override

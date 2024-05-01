@@ -289,16 +289,15 @@ public interface DAO<R extends Record & Serializable, K extends Serializable>
     }
 
     /**
-     * Return the list of field names of entitity that are considered for
+     * Return the list of field names of entity that are considered for
      * persistence. This implementation does not consider field modifiers such
      * as transient.
      *
      * @return the list of field names.
      */
     default List<String> persistentFieldNames() {
-        return getMapper()
-                .components()
-                .stream()
+        return Arrays.stream( getMapper()
+                .recordComponents() )
                 .map( RecordComponent::getName )
                 .collect( toList() );
     }
@@ -370,7 +369,8 @@ public interface DAO<R extends Record & Serializable, K extends Serializable>
      * @param fieldType for generator
      * @param generator
      */
-    default <X> void addGeneratorForClass(Class<X> fieldType, Function<? extends Serializable, X> generator) {
+    default <X> void addGeneratorForClass(Class<X> fieldType,
+            Function<? extends Serializable, X> generator) {
 
     }
 }

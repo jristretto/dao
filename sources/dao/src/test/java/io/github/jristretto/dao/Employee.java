@@ -9,8 +9,15 @@ import java.time.LocalDate;
  *
  * @author Pieter van den Hombergh {@code <pieter.van.den.hombergh@gmail.com>}
  */
-public record Employee(@ID Integer employeeid, String lastname, String firstname,
-        String email, Integer departmentid, Gender gender, Boolean available,
+public record Employee(
+        @ID Integer employeeid,
+        String lastname,
+        String firstname,
+        @ID( generated = false )
+        String email,
+        Integer departmentid,
+        Gender gender,
+        Boolean available,
         LocalDate dob,
         @Generated LocalDate hiredate) implements Serializable {
 

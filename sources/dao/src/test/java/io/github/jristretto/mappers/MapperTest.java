@@ -4,21 +4,34 @@
  */
 package io.github.jristretto.mappers;
 
+import io.github.jristretto.dao.ComponentPair;
+import io.github.jristretto.dao.Employee;
 import static io.github.jristretto.mappers.LazyEmployee.Gender.N;
-import java.lang.reflect.RecordComponent;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 //import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.*;
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.DisplayName;
+import org.mockito.*;
+import static org.mockito.Mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
+import testdata.TestData;
 
 /**
  *
  * @author Pieter van den Hombergh {@code <pieter.van.den.hombergh@gmail.com>}
  */
+@ExtendWith( MockitoExtension.class )
 public class MapperTest {
 
     LazyEmployee jean = new LazyEmployee( 0, "Klaassen", "Jean",
@@ -76,4 +89,44 @@ public class MapperTest {
 //        fail( "method Stream reached end. You know what to do." );
     }
 
+    //@Disabled("think TDD")
+    @Test @DisplayName( "code coverage in mapper" )
+    public void testDropGeneratedFields() {
+        var mapper = AbstractMapper.mapperFor( Employee.class );
+
+        List<ComponentPair> dropGeneratedFields = mapper.dropGeneratedFields(
+                TestData.ronaldo );
+        assertThat( dropGeneratedFields ).hasSize( 7 );
+//        fail( "method DropGeneratedFields reached end. You know what to do." );
+    }
+
+    //@Disabled("think TDD")
+    @Test @DisplayName( "cover exeception Test" )
+    public void testLoadMapper() throws Throwable {
+        Appendable out = mock( Appendable.class );
+        ArgumentCaptor<LogRecord> captor = ArgumentCaptor.forClass(
+                LogRecord.class );
+        Logger logger
+                = Logger.getLogger( Mapper.class.getName() );
+        Handler handler = mock( Handler.class );
+        logger.addHandler( handler );
+
+        record Puk(int i) implements Serializable {
+
+        }
+        // run the code
+
+        ThrowingCallable code = () -> {
+            AbstractMapper.loadMapperClass( Puk.class );
+        };
+
+        assertThatThrownBy( code ).isExactlyInstanceOf( RuntimeException.class )
+                .hasCauseExactlyInstanceOf( ClassNotFoundException.class );
+        verify( handler, atLeast( 1 ) ).publish( captor.capture() );
+
+        assertThat( captor.getValue().getMessage() ).contains(
+                "could", "not",
+                "find", "mapper" );
+//        fail( "method LoadMapper reached end. You know what to do." );
+    }
 }

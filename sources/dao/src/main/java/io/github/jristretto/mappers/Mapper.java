@@ -37,17 +37,12 @@ public interface Mapper<R extends Record & Serializable, K extends Serializable>
     Function<R, K> keyExtractor();
 
     /**
-     * Get the list of recordComponents.
-     *
-     * @return the RecordComponents
-     */
-    default List<RecordComponent> components() {
-        return List.of( recordComponents() );
-    }
-
-    /**
-     * Get the record components for a cache. The array is not supposed to be
+     * Get the record components from a cache. The array is not supposed to be
      * modified by the user.
+     *
+     * This method exists to reduce array creation for each
+     * class.getRecordComponents call.
+     *
      *
      * @return the components.
      */
@@ -128,19 +123,6 @@ public interface Mapper<R extends Record & Serializable, K extends Serializable>
     }
 
     /**
-     * Present a record as a String,Object map.
-     *
-     * @param entity to map
-     * @return the map
-     */
-    default Map<String, Object> asMap(R entity) {
-        var toMap = Collectors.toMap( c -> c.component()
-                .getName(), ComponentPair::value );
-        return stream( entity )
-                .collect( toMap );
-    }
-
-    /**
      * Get the positions of the components in the record as a map.
      *
      * @return the map.
@@ -154,11 +136,7 @@ public interface Mapper<R extends Record & Serializable, K extends Serializable>
      *
      * @return a set
      */
-    default Set<String> componentNames() {
-        return Set.copyOf( Stream.of( recordComponents() )
-                .map( RecordComponent::getName )
-                .collect( toCollection( LinkedHashSet::new ) ) );
-    }
+    Set<String> componentNames();
 
     /**
      * Construct a new record of type R given the components.
@@ -167,16 +145,4 @@ public interface Mapper<R extends Record & Serializable, K extends Serializable>
      * @return new R.
      */
     abstract R newEntity(Object[] components);
-
-    /**
-     * Deconstruct a record so a non-business class such as an Abstract DAO can
-     * deal with it.
-     *
-     * @param entity to deconstruct
-     * @return the components in an array
-     */
-    default Object[] deconstruct(R entity) {
-        return asArray( entity );
-    }
-
 }

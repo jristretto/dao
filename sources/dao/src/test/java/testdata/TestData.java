@@ -37,4 +37,7 @@ public interface TestData {
             "karen@madhatter.info", 5, F, false, LocalDate.of( 1999,
                     12, 23 ),
             LocalDate.of( 2023, Month.MARCH, 4 ) );
+    static Employee ronaldo = new Employee( null, "Ronaldo", null,
+            "karen@madhatter.info", 5, N, false, LocalDate.of( 1999,
+                    12, 23 ), null );
 }

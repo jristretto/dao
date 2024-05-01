@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Optional;
 import io.github.jristretto.inmemorydao.InMemoryDAO.EqualMask;
 import org.junit.jupiter.api.Test;
-//import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.*;
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.DisplayName;
 import testdata.TestData;
 
@@ -157,20 +157,18 @@ public class InMemoryDAOTest implements TestData {
                 .containsExactlyInAnyOrderElementsOf( expResult );
     }
 
-    /**
-     * Test of equalMask method, of class InMemoryDAO.
-     */
-    @Test
-    @DisplayName( "equal mask" )
-    public void testEqualMask() {
-        Object[] keyValues = { "available", true, "departmentid", 1 };
-        EqualMask expResult = new EqualMask(
-                new boolean[]{ false, false, false, false, true, false, true, false, false },
-                new Object[]{ null, null, null, null, 1, null, true, null, null } );
-        EqualMask result = dao.equalMask( keyValues );
-        assertThat( result )
-                .as( expResult.toString() + "\n!=" + result.toString() )
-                .isEqualTo( expResult );
+    //@Disabled("think TDD")
+    @Test @DisplayName( "mask and components must have same length" )
+    public void testIllegaleEqualMask() {
+        ThrowingCallable code = () -> {
+            EqualMask expResult = new EqualMask(
+                    new boolean[]{ false, false, false, false, true, false, true, false },// false },
+                new Object[]{ null, null, null, null, 1, null, true, null, null }
+        );
+        };
+        assertThatThrownBy( code ).isExactlyInstanceOf(
+                IllegalArgumentException.class );
+//        fail( "method IllegaleEqualMask reached end. You know what to do." );
     }
 
     /**
@@ -182,8 +180,9 @@ public class InMemoryDAOTest implements TestData {
         var j = janneke;
         EqualMask equalMask = dao.equalMask( "departmentid", 5, "gender",
                 F );
+        Mapper<Employee, Integer> mapper = dao.getMapper();
         boolean expResult = true;
-        boolean result = dao.maskedEqual( j, equalMask );
+        boolean result = equalMask.maskedEqual( mapper.asArray( j ) );
         assertThat( result )
                 .isEqualTo( expResult );
     }
