@@ -4,6 +4,7 @@ import io.github.jristretto.annotations.ID;
 import io.github.jristretto.dao.DAO;
 import io.github.jristretto.mappers.AbstractMapper;
 import io.github.jristretto.mappers.Mapper;
+import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -71,6 +72,10 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
     }
 
     private static final AtomicInteger serialNumbers = new AtomicInteger();
+
+    public String getStorageFileName() {
+        return storageFileName;
+    }
 
     @Override
     public Optional<R> get(K id) {
@@ -140,7 +145,7 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
                 .toList();
     }
 
-    private void persistToDisk() {
+    public final void persistToDisk() {
         if ( storage.isEmpty() ) {
             return; // nothing to do
         }
@@ -159,18 +164,24 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
         }
     }
 
-    private void load(String aStorageName) {
+    public final void load(String aStorageName) {
         dropAll();
 
         try ( ObjectInputStream in = new ObjectInputStream(
                 new FileInputStream( aStorageName ) ) ) {
             while ( true ) {
-                R r = mapper.entityType()
-                        .cast( in.readObject() );
-                this.storage.put( mapper.keyExtractor()
-                        .apply( r ), r );
+                Object readObject = in.readObject();
+                if ( null != readObject ) {
+                    R r = mapper.entityType()
+                            .cast( readObject );
+                    this.storage.put( mapper.keyExtractor()
+                            .apply( r ), r );
+                } else {
+                    break;
+                }
             }
 
+        } catch ( EOFException expected ) {
         } catch ( FileNotFoundException ex ) {
             Logger.getLogger( InMemoryDAO.class.getName() )
                     .log( Level.SEVERE, null, ex );

@@ -7,6 +7,9 @@ import io.github.jristretto.mappers.Mapper;
 import java.util.List;
 import java.util.Optional;
 import io.github.jristretto.inmemorydao.InMemoryDAO.EqualMask;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
@@ -163,8 +166,8 @@ public class InMemoryDAOTest implements TestData {
         ThrowingCallable code = () -> {
             EqualMask expResult = new EqualMask(
                     new boolean[]{ false, false, false, false, true, false, true, false },// false },
-                new Object[]{ null, null, null, null, 1, null, true, null, null }
-        );
+                    new Object[]{ null, null, null, null, 1, null, true, null, null }
+            );
         };
         assertThatThrownBy( code ).isExactlyInstanceOf(
                 IllegalArgumentException.class );
@@ -224,4 +227,30 @@ public class InMemoryDAOTest implements TestData {
 //        fail( "method JannekeShouldGetGeneratedComponents reached end. You know what to do." );
     }
 
+    //@Disabled("think TDD")
+    @Test @DisplayName( "persist dao" )
+    public void testPersist() throws IOException {
+        dao.dropAll();
+        dao.saveAll( jean, piet, karen, janneke );
+        for ( Employee employee : dao.getAll() ) {
+            System.out.println( "employee = " + employee );
+        }
+        int size0 = dao.size();
+        assertThat( size0 ).isEqualTo( 4 );
+
+        dao.persistToDisk();
+        String serName = dao.getStorageFileName();
+        File f = new File( serName );
+        assertThat( f ).exists();
+        long fSize = Files.size( f.toPath() );
+        assertThat( fSize ).isGreaterThan( 0 );
+
+        dao.dropAll();
+        dao.load( serName );
+
+        int size1 = dao.size();
+
+        assertThat( size1 ).isEqualTo( size0 );
+//        fail( "method Persist reached end. You know what to do." );
+    }
 }
