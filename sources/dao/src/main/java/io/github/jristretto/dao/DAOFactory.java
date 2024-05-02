@@ -18,7 +18,7 @@ public interface DAOFactory {
      * @param forClass actual type of the entity
      * @return the prepared DAO.
      */
-    <E extends Record & Serializable, K extends Serializable> DAO<E, K>
+    <E extends Record & Serializable, K extends Number> DAO<E, K>
             createDao(Class<E> forClass);
 
     /**
@@ -32,7 +32,7 @@ public interface DAOFactory {
      * @param token transaction token.
      * @return the prepared DAO
      */
-    <E extends Record & Serializable, K extends Serializable> DAO<E, K>
+    <E extends Record & Serializable, K extends Number> DAO<E, K>
             createDao(Class<E> forClass,
                     TransactionToken token);
 }

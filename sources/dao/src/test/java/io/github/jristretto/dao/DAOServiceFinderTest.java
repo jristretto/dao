@@ -45,12 +45,23 @@ public class DAOServiceFinderTest {
     }
 
     //@Disabled("think TDD")
-    @Test @DisplayName( "some story line" )
+    @Test @DisplayName( "non existing flavor  returns null" )
     public void testTryNonExistingFlavor() {
         DAOFactory daf = new DAOServiceFinder( "no-service" ).getDAOFactory();
 
         assertThat( daf )
                 .isNull();;
 //        fail( "method TryNonExistingFlavor reached end. You know what to do." );
+    }
+
+    //@Disabled("think TDD")
+    @Test @DisplayName( "some story line" )
+    public void testCacheUse() {
+        DAOServiceFinder dsf = new DAOServiceFinder( "inmemory" );
+        DAOFactory daoFactory1 = dsf.getDAOFactory();
+        DAOFactory daoFactory2 = dsf.getDAOFactory();
+        assertThat( daoFactory1 ).isSameAs( daoFactory2 );
+        assertThat( dsf.toString() ).contains( "flavor", "inmemory" );
+//        fail( "method CacheUse reached end. You know what to do." );
     }
 }

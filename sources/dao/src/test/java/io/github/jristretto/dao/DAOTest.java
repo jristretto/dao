@@ -1,14 +1,14 @@
 package io.github.jristretto.dao;
 
 import io.github.jristretto.inmemorydao.InMemoryDAO;
+import io.github.jristretto.mappers.LazyEmployee;
 import java.util.List;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import testdata.TestData;
 import static testdata.TestData.janneke;
-import static testdata.TestData.jean;
 //import static usertypes.Email.email;
 //import static usertypes.Email.email;
 
@@ -87,5 +87,23 @@ public class DAOTest implements TestData {
                             "dob" );
         } );
 //        fail( "method DropGeneratedFields completed succesfully; you know what to do" );
+    }
+
+    //@Disabled("think TDD")
+    @Test
+    @DisplayName( "some story line" )
+    public void testTableName() {
+        assertThat( dao.tableName() ).isEqualTo( "employees"
+        );
+//        fail( "method TableName reached end. You know what to do." );
+    }
+
+    //@Disabled("think TDD")
+    @Test @DisplayName( "some story line" )
+    public void testLazyTableName() {
+        DAO<LazyEmployee, Integer> dao = new InMemoryDAO<>( LazyEmployee.class );
+        assertThat( dao.tableName() ).isEqualTo( "lazyemployees"
+        );
+//        fail( "method LazyTableName reached end. You know what to do." );
     }
 }

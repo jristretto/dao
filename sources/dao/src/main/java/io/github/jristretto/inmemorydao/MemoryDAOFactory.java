@@ -17,13 +17,13 @@ public class MemoryDAOFactory implements DAOFactory {
     }
 
     @Override
-    public <E extends java.lang.Record & java.io.Serializable, K extends Serializable> DAO<E, K> createDao(
+    public <E extends java.lang.Record & java.io.Serializable, K extends Number> DAO<E, K> createDao(
             Class<E> forClass) {
         return new InMemoryDAO<>( forClass );
     }
 
     @Override
-    public <E extends java.lang.Record & java.io.Serializable, K extends Serializable> DAO<E, K> createDao(
+    public <E extends java.lang.Record & java.io.Serializable, K extends Number> DAO<E, K> createDao(
             Class<E> forClass, TransactionToken token) {
         throw new UnsupportedOperationException( "Not supported yet." );
     }

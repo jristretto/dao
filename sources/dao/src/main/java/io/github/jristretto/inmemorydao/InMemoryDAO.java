@@ -41,7 +41,7 @@ import java.util.logging.Logger;
  * @param <R> record type
  * @param <K> key type
  */
-public class InMemoryDAO<R extends Record & Serializable, K extends Serializable>
+public class InMemoryDAO<R extends Record & Serializable, K extends Number>
         implements DAO<R, K> {
 
     private final Class<R> entityType;
@@ -182,9 +182,6 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
             }
 
         } catch ( EOFException expected ) {
-        } catch ( FileNotFoundException ex ) {
-            Logger.getLogger( InMemoryDAO.class.getName() )
-                    .log( Level.SEVERE, null, ex );
         } catch ( IOException | ClassNotFoundException ex ) {
             Logger.getLogger( InMemoryDAO.class.getName() )
                     .log( Level.SEVERE, null, ex );
@@ -199,6 +196,7 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
      * @param e to be adapted.
      * @return a new entity with generated fields filled in.
      */
+    @SuppressWarnings( "unchecked" )
     public R applyGenerators(R e) {
         Object[] componentArray = getMapper().asArray( e );
         if ( null == keyGenerator ) {
@@ -212,7 +210,7 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
         return mapper.newEntity( componentArray );
     }
 
-    @SuppressWarnings( " unchecked" )
+    @SuppressWarnings( "unchecked" )
     private SerialGenerator<K> computeGenerator() {
         RecordComponent keyComponent = mapper.recordComponents()[ keyIndex ];
         ID annotation = keyComponent.getAnnotation( ID.class );
@@ -238,65 +236,6 @@ public class InMemoryDAO<R extends Record & Serializable, K extends Serializable
         }
         return 0;
     }
-
-    interface SerialGenerator<S> extends Supplier<S>, Consumer<S> {
-    }
-
-    private static final class SerialLongGenerator implements
-            SerialGenerator<Long> {
-
-        private AtomicLong value = new AtomicLong();
-
-        public SerialLongGenerator() {
-        }
-
-        long nextValue() {
-            return value.incrementAndGet();
-        }
-
-        void presetTo(long v) {
-            value.set( v );
-        }
-
-        @Override
-        public Long get() {
-            return nextValue();
-        }
-
-        @Override
-        public void accept(Long t) {
-            presetTo( Math.max( value.get(), t ) );
-        }
-    }
-
-    private static final class SerialIntegerGenerator implements
-            SerialGenerator<Integer> {
-
-        private AtomicInteger value = new AtomicInteger();
-
-        public SerialIntegerGenerator() {
-        }
-
-        int nextValue() {
-            return value.incrementAndGet();
-        }
-
-        void presetTo(int v) {
-            value.set( v );
-        }
-
-        @Override
-        public Integer get() {
-            return nextValue();
-        }
-
-        @Override
-        public void accept(Integer t) {
-            presetTo( Math.max( value.get(), t.intValue() ) );
-        }
-
-    }
-
     /**
      * Helper for masked equal test.
      */

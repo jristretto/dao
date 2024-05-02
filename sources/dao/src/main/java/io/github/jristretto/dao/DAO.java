@@ -34,7 +34,7 @@ import java.util.stream.StreamSupport;
  * @param <R> the type of Entity of entity type.
  * @param <K> Key to the entity.
  */
-public interface DAO<R extends Record & Serializable, K extends Serializable>
+public interface DAO<R extends Record & Serializable, K extends Number>
         extends AutoCloseable {
 
     /**
@@ -54,13 +54,13 @@ public interface DAO<R extends Record & Serializable, K extends Serializable>
     List<R> getAll();
 
     /**
-     * Get by column keyvalues pairs. Convenience method to get a entities by
+     * Get by column key values pairs. Convenience method to get a entities by
      * field=value[,field=value].
      *
      * @param keyValues even sized parameter list like
      * ("departmentid",1,"firstname", "Piet").
      *
-     * @return the collection of enities matching key value pairs.
+     * @return the collection of entities matching key value pairs.
      */
     default List<R> getByColumnValues(Object... keyValues) {
         throw new UnsupportedOperationException( "Not yet available" );
@@ -360,17 +360,4 @@ public interface DAO<R extends Record & Serializable, K extends Serializable>
     default void dropAll() {
     }
 
-    /**
-     * For the fields that have generated values, allow generators to be
-     * registered based on the filed type and specific for this DAO. This
-     * facility exists to make implementations without a real back service (such
-     * ad a RDBMS) to have generated fields. Use case is in mmeory databases.
-     *
-     * @param fieldType for generator
-     * @param generator
-     */
-    default <X> void addGeneratorForClass(Class<X> fieldType,
-            Function<? extends Serializable, X> generator) {
-
-    }
 }
