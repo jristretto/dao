@@ -86,7 +86,8 @@ public interface Mapper<R extends Record & Serializable, K extends Serializable>
                 accessor.setAccessible( true );
                 result[ i ] = accessor.invoke( r );
             }
-        } catch ( IllegalAccessException | InvocationTargetException ex ) {
+        } catch ( IllegalAccessException | InvocationTargetException neveroccurs ) {
+            // this code branch can never be reached.
         }
         return result;
     }
@@ -101,11 +102,16 @@ public interface Mapper<R extends Record & Serializable, K extends Serializable>
      * @return result of test
      */
     default boolean isGenerated(RecordComponent rc) {
-        ID idAnnotation = rc.getAnnotation( ID.class );
         Generated genannotation = rc.getAnnotation( Generated.class );
+        if ( null != genannotation ) {
+            return true;
+        }
 
-        return null != genannotation || ( null != idAnnotation && idAnnotation
-                                         .generated() );
+        ID idAnnotation = rc.getAnnotation( ID.class );
+        if ( null == idAnnotation ) {
+            return false;
+        }
+        return idAnnotation.generated();
     }
 
     /**

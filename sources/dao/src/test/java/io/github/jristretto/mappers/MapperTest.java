@@ -4,15 +4,19 @@
  */
 package io.github.jristretto.mappers;
 
+import io.github.jristretto.annotations.ID;
 import io.github.jristretto.dao.ComponentPair;
 import io.github.jristretto.dao.Employee;
 import static io.github.jristretto.mappers.LazyEmployee.Gender.N;
 import java.io.Serializable;
+import java.lang.reflect.RecordComponent;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -128,5 +132,51 @@ public class MapperTest {
                 "could", "not",
                 "find", "mapper" );
 //        fail( "method LoadMapper reached end. You know what to do." );
+    }
+
+    private record XX(@ID Integer x) implements Serializable {
+
+    }
+
+    //@Disabled("think TDD")
+    @Test@DisplayName( "assArray exception for coverage" )
+
+    public void testException() {
+        var xmapper = new Mapper<XX, Integer>() {
+            @Override
+            public Function<XX, Integer> keyExtractor() {
+                throw new UnsupportedOperationException( "Not supported yet." ); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+            }
+
+            @Override
+            public RecordComponent[] recordComponents() {
+                return XX.class.getRecordComponents();
+            }
+
+            @Override
+            public Class<XX> entityType() {
+                throw new UnsupportedOperationException( "Not supported yet." ); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+            }
+
+            @Override
+            public Map<String, Integer> componentIndex() {
+                throw new UnsupportedOperationException( "Not supported yet." ); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+            }
+
+            @Override
+            public Set<String> componentNames() {
+                throw new UnsupportedOperationException( "Not supported yet." ); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+            }
+
+            @Override
+            public XX newEntity(Object[] components) {
+                throw new UnsupportedOperationException( "Not supported yet." ); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+            }
+        };
+
+        var xx = new XX( 42 );
+        Object[] asArray = xmapper.asArray( xx );
+        assertThat( asArray[ 0 ] ).isEqualTo( 42 );
+//        fail( "method Exception reached end. You know what to do." );
     }
 }
